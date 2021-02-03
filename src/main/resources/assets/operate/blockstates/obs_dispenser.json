@@ -1,0 +1,26 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "operate:block/obs_dispenser_vertical",
+      "x": 180
+    },
+    "facing=east": {
+      "model": "operate:block/obs_dispenser",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "operate:block/obs_dispenser"
+    },
+    "facing=south": {
+      "model": "operate:block/obs_dispenser",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "operate:block/obs_dispenser_vertical"
+    },
+    "facing=west": {
+      "model": "operate:block/obs_dispenser",
+      "y": 270
+    }
+  }
+}

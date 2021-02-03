@@ -1,0 +1,7 @@
+{
+  "parent": "block/orientable_vertical",
+  "textures": {
+    "front": "operate:block/obs_dispenser_front_vertical",
+    "side": "operate:block/obs_dispenser"
+  }
+}

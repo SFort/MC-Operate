@@ -1,0 +1,12 @@
+{
+  "hit_spoon": {
+    "sounds":[
+      "operate:hit_spoon"
+    ]
+  },
+  "break_spoon": {
+    "sounds":[
+      "operate:break_spoon"
+    ]
+  }
+}

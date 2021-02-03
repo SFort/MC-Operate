@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "id": "operate",
+  "version": "${version}",
+
+  "name": "Operate",
+  "description": "Adds ",
+  "authors": [
+    "SFort"
+  ],
+  "contact": {
+    "sources": "https://github.com/SFort/MC-Operate"
+  },
+
+  "license": "MIT",
+
+  "environment": "*",
+  "entrypoints": {
+    "main": ["tf.ssf.sfort.Main"]
+  },
+  "mixins": [
+    "mod.mixins.json"
+  ],
+
+  "depends": {
+    "fabricloader": "*",
+    "fabric": "*",
+    "minecraft": "*"
+  }
+}
