@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//TODO crafting maybe anvil/hammer
 public class ObsidianDispenser extends DispenserBlock {
     public static Block BLOCK;
     private static final Map<Item, DispenserBehavior> BEHAVIORS = new HashMap<Item, DispenserBehavior>(){{
