@@ -1,9 +1,6 @@
 package tf.ssf.sfort;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.*;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -13,6 +10,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
@@ -45,7 +43,7 @@ public class Spoon extends Item {
         //if(p != null)tryPlace(world,pos,p);
         if (stack.getDamage() == 0){
             if(hasCrafted(world,pos))
-                world.playSound(p, pos, BREAK, SoundCategory.BLOCKS, 0.27F, RANDOM.nextFloat() * 0.1F + 0.9F);
+                world.playSound(p, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
             else
                 world.playSound(p, pos, HIT, SoundCategory.BLOCKS, 0.27F, RANDOM.nextFloat() * 0.1F + 0.4F);
             stack.damage(stack.getMaxDamage(), world.random, null);
@@ -62,19 +60,26 @@ public class Spoon extends Item {
     }
 
     public boolean hasCrafted(World world, BlockPos pos){
-        BlockState state = world.getBlockState(pos.down());
-        if (world.getBlockState(pos).isOf(Blocks.OBSIDIAN) && state.isOf(Blocks.DISPENSER)) {
+        BlockState state_down = world.getBlockState(pos.down());
+        BlockState state = world.getBlockState(pos);
+        if (state.isOf(Blocks.OBSIDIAN) && state_down.isOf(Blocks.DISPENSER)) {
             world.removeBlock(pos, false);
             if(world instanceof ServerWorld)((ServerWorld)world).spawnParticles(ParticleTypes.ASH, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, 12, 0.3, 0.15, 0.3, 0.01);
-            world.setBlockState(pos.down(), ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, state.get(DispenserBlock.FACING)));
+            world.setBlockState(pos.down(), ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, state_down.get(DispenserBlock.FACING)));
             return true;
         }
-        if (world.getBlockState(pos).isOf(Blocks.SOUL_SAND) && state.isOf(ObsidianDispenser.BLOCK)) {
+        if (state.isOf(Blocks.SOUL_SAND) && state_down.isOf(ObsidianDispenser.BLOCK)) {
             world.removeBlock(pos, false);
             if(world instanceof ServerWorld){
                 ((ServerWorld)world).spawnParticles(ParticleTypes.ASH, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, 12, 0.3, 0.15, 0.3, 0.01);
                 world.playSound(null, pos, SoundEvents.PARTICLE_SOUL_ESCAPE, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.6F);}
             world.setBlockState(pos.down(), Jolt.BLOCK.getDefaultState());
+            return true;
+        }
+        if (state.getProperties().contains(Properties.LIT)) {
+            if(world instanceof ServerWorld){
+                world.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.9F);}
+            world.setBlockState(pos, state.with(Properties.LIT, true),0);
             return true;
         }
         return false;
