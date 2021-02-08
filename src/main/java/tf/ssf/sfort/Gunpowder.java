@@ -29,7 +29,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
     public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
     public static Block BLOCK;
     protected Gunpowder(Settings settings) {
-        super(8.0F, 0.0F, 1.0F, 1.0F, 0.0F, settings);
+        super(8.0F, 0.0F, 1.0F, 1.0F, 1.0F, settings);
         this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(WATERLOGGED, false));
     }
     public static void register(){
@@ -92,10 +92,10 @@ public class Gunpowder extends HorizontalConnectingBlock {
         }
         return this.getDefaultState()
                 .with(TRIGGERED, pow)
-                .with(NORTH, !world.isAir(pos.north()))
-                .with(SOUTH, !world.isAir(pos.south()))
-                .with(WEST, !world.isAir(pos.west()))
-                .with(EAST, !world.isAir(pos.east()));
+                .with(NORTH, !world.getBlockState(pos.north()).getMaterial().isReplaceable())
+                .with(SOUTH, !world.getBlockState(pos.south()).getMaterial().isReplaceable())
+                .with(WEST, !world.getBlockState(pos.west()).getMaterial().isReplaceable())
+                .with(EAST, !world.getBlockState(pos.east()).getMaterial().isReplaceable());
     }
 
     public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
