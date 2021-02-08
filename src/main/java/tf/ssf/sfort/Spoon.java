@@ -1,7 +1,8 @@
 package tf.ssf.sfort;
 
-import net.minecraft.block.*;
-import net.minecraft.block.dispenser.DispenserBehavior;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DispenserBlock;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
@@ -12,12 +13,9 @@ import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-
-import java.util.Map;
 
 public class Spoon extends Item {
     public static final SoundEvent HIT = new SoundEvent(Main.id("hit_spoon"));
@@ -39,8 +37,7 @@ public class Spoon extends Item {
         ItemStack stack = context.getStack();
         PlayerEntity p = context.getPlayer();
         stack.damage(-1, world.random, null);
-        //TODO gunpowder
-        //if(p != null)tryPlace(world,pos,p);
+        if(p != null)tryPlace(world,pos.offset(context.getSide()),p);
         if (stack.getDamage() == 0){
             if(hasCrafted(world,pos))
                 world.playSound(p, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
@@ -86,8 +83,8 @@ public class Spoon extends Item {
     }
     public void tryPlace(World world, BlockPos pos, PlayerEntity p){
         ItemStack item = p.getOffHandStack();
-        if(item.getItem().equals(Items.GUNPOWDER) && world.getBlockState(pos).isFullCube(world,pos) && world.getBlockState(pos.up()).isAir()){
-            world.setBlockState(pos.up(), Gunpowder.BLOCK.getDefaultState());
+        if(item.getItem().equals(Items.GUNPOWDER) && world.getBlockState(pos.down()).isFullCube(world,pos.down()) && world.getBlockState(pos).isAir()){
+            world.setBlockState(pos,((Gunpowder)Gunpowder.BLOCK).getPlacementState(world,pos));
             p.getOffHandStack().decrement(1);
         }
     }

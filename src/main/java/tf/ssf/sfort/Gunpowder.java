@@ -25,7 +25,7 @@ import net.minecraft.world.WorldAccess;
 import java.util.Random;
 
 public class Gunpowder extends HorizontalConnectingBlock {
-    public final int time = 7;
+    public static final int time = 7;
     public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
     public static Block BLOCK;
     protected Gunpowder(Settings settings) {
@@ -41,13 +41,17 @@ public class Gunpowder extends HorizontalConnectingBlock {
     @Override
     public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) { return state.get(TRIGGERED)?15:0; }
 
-
     @Override
     public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
         if(state.get(TRIGGERED))
             world.removeBlock(pos, false);
         else {
             world.setBlockState(pos, state.with(TRIGGERED, true));
+            for (Direction dir : Direction.Type.HORIZONTAL)
+                if (world.getBlockState(pos.up().offset(dir)).getBlock() instanceof Gunpowder)
+                    world.getBlockTickScheduler().schedule(pos.up().offset(dir), this, time);;
+            
+            world.updateNeighbors(pos.down(), this);
             world.getBlockTickScheduler().schedule(pos, this, time);
         }
     }
@@ -79,13 +83,19 @@ public class Gunpowder extends HorizontalConnectingBlock {
 
     }
     public BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockPos pos = ctx.getBlockPos();
-        World world = ctx.getWorld();
+        return getPlacementState(ctx.getWorld(), ctx.getBlockPos());
+    }
+    public BlockState getPlacementState(World world, BlockPos pos) {
         boolean pow = world.isReceivingRedstonePower(pos);
         if(pow) {
             world.getBlockTickScheduler().schedule(pos, this, time);
         }
-        return this.getDefaultState().with(TRIGGERED, pow).with(NORTH, !world.isAir(pos.north())).with(SOUTH, !world.isAir(pos.south())).with(WEST, !world.isAir(pos.west())).with(EAST, !world.isAir(pos.east()));
+        return this.getDefaultState()
+                .with(TRIGGERED, pow)
+                .with(NORTH, !world.isAir(pos.north()))
+                .with(SOUTH, !world.isAir(pos.south()))
+                .with(WEST, !world.isAir(pos.west()))
+                .with(EAST, !world.isAir(pos.east()));
     }
 
     public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
@@ -94,7 +104,9 @@ public class Gunpowder extends HorizontalConnectingBlock {
         }
     }
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
-        return direction.getAxis().isHorizontal()? state.with(FACING_PROPERTIES.get(direction), !newState.isAir()):super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
+        return direction.getAxis().isHorizontal()?
+                state.with(FACING_PROPERTIES.get(direction), !newState.isAir())
+                :super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
     }
 
     protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
