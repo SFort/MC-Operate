@@ -99,13 +99,14 @@ public class Gunpowder extends HorizontalConnectingBlock {
     }
 
     public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
+        if(fromPos.getY()<pos.getY() && !world.getBlockState(fromPos).isFullCube(world,fromPos)){world.breakBlock(pos,true); return;}
         if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up()) && !state.get(TRIGGERED)) {
             world.getBlockTickScheduler().schedule(pos, this, time);
         }
     }
     public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
         return direction.getAxis().isHorizontal()?
-                state.with(FACING_PROPERTIES.get(direction), !newState.isAir())
+                state.with(FACING_PROPERTIES.get(direction), !newState.getMaterial().isReplaceable())
                 :super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
     }
 
