@@ -36,8 +36,8 @@ public class Spoon extends Item {
         BlockPos pos = context.getBlockPos();
         ItemStack stack = context.getStack();
         PlayerEntity p = context.getPlayer();
+        if(p != null && tryPlace(world,pos.offset(context.getSide()),p)) return ActionResult.SUCCESS;
         stack.damage(-1, world.random, null);
-        if(p != null)tryPlace(world,pos.offset(context.getSide()),p);
         if (stack.getDamage() == 0){
             if(hasCrafted(world,pos))
                 world.playSound(p, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
@@ -81,11 +81,13 @@ public class Spoon extends Item {
         }
         return false;
     }
-    public void tryPlace(World world, BlockPos pos, PlayerEntity p){
+    public boolean tryPlace(World world, BlockPos pos, PlayerEntity p){
         ItemStack item = p.getOffHandStack();
         if(item.getItem().equals(Items.GUNPOWDER) && world.getBlockState(pos.down()).isFullCube(world,pos.down()) && world.getBlockState(pos).isAir()){
             world.setBlockState(pos,((Gunpowder)Gunpowder.BLOCK).getPlacementState(world,pos));
             p.getOffHandStack().decrement(1);
+            return true;
         }
+        return false;
     }
 }
