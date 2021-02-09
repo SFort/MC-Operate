@@ -73,7 +73,7 @@ class JoltEntity extends BlockEntity implements Inventory {
     public ItemStack inv = ItemStack.EMPTY;
     private byte dir = 0;
     public void update_dir(Direction d){
-        if(world != null) {
+        if(world != null && d !=null) {
             byte b_dir =(byte)Math.pow(2, d.getId());
             BlockState state = world.getBlockState(pos.offset(d));
             BlockState placing = Block.getBlockFromItem(inv.getItem()).getDefaultState();
@@ -100,6 +100,8 @@ class JoltEntity extends BlockEntity implements Inventory {
                 dir^=b_dir;
                 place.run();
             }
+        }else {
+            dir = 0;
         }
     }
     
