@@ -74,7 +74,7 @@ class JoltEntity extends BlockEntity implements Inventory {
     private byte dir = 0;
     public void update_dir(Direction d){
         if(world != null && d !=null) {
-            byte b_dir =(byte)Math.pow(2, d.getId());
+            byte b_dir = (byte)(1<<d.getId());
             BlockState state = world.getBlockState(pos.offset(d));
             BlockState placing = Block.getBlockFromItem(inv.getItem()).getDefaultState();
             boolean bl = state.getBlock() instanceof PistonHeadBlock && state.get(Properties.FACING).equals(d.getOpposite());
