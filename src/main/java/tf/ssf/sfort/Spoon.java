@@ -39,10 +39,7 @@ public class Spoon extends Item {
         if(p != null && tryPlace(world,pos.offset(context.getSide()),p)) return ActionResult.SUCCESS;
         stack.damage(-1, world.random, null);
         if (stack.getDamage() == 0){
-            if(hasCrafted(world,pos))
-                world.playSound(p, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
-            else
-                world.playSound(p, pos, HIT, SoundCategory.BLOCKS, 0.27F, RANDOM.nextFloat() * 0.1F + 0.4F);
+            tryCraft(world,pos);
             stack.damage(stack.getMaxDamage(), world.random, null);
         }else{
             world.playSound(p, pos, HIT, SoundCategory.BLOCKS, 0.5F, RANDOM.nextFloat() * 0.1F + 0.8F+(stack.getDamage()*0.05F));
@@ -56,34 +53,40 @@ public class Spoon extends Item {
         stack.setDamage(this.getMaxDamage());
     }
 
-    public boolean hasCrafted(World world, BlockPos pos){
+    public void tryCraft(World world, BlockPos pos){
         BlockState state_down = world.getBlockState(pos.down());
         BlockState state = world.getBlockState(pos);
-        if (state.isOf(Blocks.OBSIDIAN) && state_down.isOf(Blocks.DISPENSER)) {
-            world.removeBlock(pos, false);
-            if(world instanceof ServerWorld)((ServerWorld)world).spawnParticles(ParticleTypes.ASH, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, 12, 0.3, 0.15, 0.3, 0.01);
-            world.setBlockState(pos.down(), ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, state_down.get(DispenserBlock.FACING)));
-            return true;
-        }
-        if (state.isOf(Blocks.SOUL_SAND) && state_down.isOf(ObsidianDispenser.BLOCK)) {
+        if (Config.obsDispenser && state.isOf(Blocks.OBSIDIAN) && state_down.isOf(Blocks.DISPENSER)) {
             world.removeBlock(pos, false);
             if(world instanceof ServerWorld){
                 ((ServerWorld)world).spawnParticles(ParticleTypes.ASH, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, 12, 0.3, 0.15, 0.3, 0.01);
-                world.playSound(null, pos, SoundEvents.PARTICLE_SOUL_ESCAPE, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.6F);}
-            world.setBlockState(pos.down(), Jolt.BLOCK.getDefaultState());
-            return true;
+                world.playSound(null, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
+            }
+            world.setBlockState(pos.down(), ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, state_down.get(DispenserBlock.FACING)));
+            return;
         }
-        if (state.getProperties().contains(Properties.LIT)) {
+        if (Config.jolt && state.isOf(Blocks.SOUL_SAND) && state_down.isOf(ObsidianDispenser.BLOCK)) {
+            world.removeBlock(pos, false);
             if(world instanceof ServerWorld){
-                world.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.9F);}
-            world.setBlockState(pos, state.with(Properties.LIT, true),0);
-            return true;
+                ((ServerWorld)world).spawnParticles(ParticleTypes.ASH, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, 12, 0.3, 0.15, 0.3, 0.01);
+                world.playSound(null, pos, SoundEvents.PARTICLE_SOUL_ESCAPE, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.6F);
+                world.playSound(null, pos, BREAK, SoundCategory.BLOCKS, 0.17F, RANDOM.nextFloat() * 0.1F + 0.9F);
+            }
+            world.setBlockState(pos.down(), Jolt.BLOCK.getDefaultState());
+            return;
         }
-        return false;
+        if (Config.litSpoon && state.getProperties().contains(Properties.LIT)) {
+            if(world instanceof ServerWorld){
+                world.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundCategory.BLOCKS, 1.0F, RANDOM.nextFloat() * 0.1F + 0.9F);
+            }
+            world.setBlockState(pos, state.with(Properties.LIT, true),0);
+            return;
+        }
+        world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.27F, RANDOM.nextFloat() * 0.1F + 0.4F);
     }
     public boolean tryPlace(World world, BlockPos pos, PlayerEntity p){
         ItemStack item = p.getOffHandStack();
-        if(item.getItem().equals(Items.GUNPOWDER) && world.getBlockState(pos.down()).isFullCube(world,pos.down()) && world.getBlockState(pos).isAir()){
+        if(Config.gunpowder && item.getItem().equals(Items.GUNPOWDER) && world.getBlockState(pos.down()).isFullCube(world,pos.down()) && world.getBlockState(pos).isAir()){
             world.setBlockState(pos,((Gunpowder)Gunpowder.BLOCK).getPlacementState(world,pos));
             p.getOffHandStack().decrement(1);
             return true;

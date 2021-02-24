@@ -61,7 +61,12 @@ public class Jolt extends Block implements BlockEntityProvider{
         return ActionResult.CONSUME;
     }
     public Jolt(Settings settings) { super(settings); }
-    public static void register() { BLOCK = Registry.register(Registry.BLOCK, Main.id("jolt"), new Jolt()); JoltEntity.register();}
+    public static void register() {
+        if (Config.jolt != null) {
+            BLOCK = Registry.register(Registry.BLOCK, Main.id("jolt"), new Jolt());
+            JoltEntity.register();
+        }
+    }
     @Override public Item asItem(){ return Items.DISPENSER; };
     @Override public BlockEntity createBlockEntity(BlockView world) { return new JoltEntity(); }
 }

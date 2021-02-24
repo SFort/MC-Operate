@@ -33,7 +33,8 @@ public class Gunpowder extends HorizontalConnectingBlock {
         this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(WATERLOGGED, false));
     }
     public static void register(){
-        BLOCK = Registry.register(Registry.BLOCK,new Identifier("operate","gunpowder"),new Gunpowder(AbstractBlock.Settings.of(Material.SUPPORTED).noCollision().breakInstantly()));;
+        if (Config.gunpowder != null)
+            BLOCK = Registry.register(Registry.BLOCK,new Identifier("operate","gunpowder"),new Gunpowder(AbstractBlock.Settings.of(Material.SUPPORTED).noCollision().breakInstantly()));;
     }
     @Override
     public Item asItem(){ return Items.GUNPOWDER; };

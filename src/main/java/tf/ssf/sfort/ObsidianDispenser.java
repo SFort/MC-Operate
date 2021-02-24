@@ -28,9 +28,7 @@ import java.util.Map;
 
 public class ObsidianDispenser extends DispenserBlock {
     public static Block BLOCK;
-    private static final Map<Item, DispenserBehavior> BEHAVIORS = new HashMap<Item, DispenserBehavior>(){{
-                put(Items.GUNPOWDER ,new ItemDispenserBehavior(){public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) { return ignite(pointer,stack,4); }});
-    }};
+    private static final Map<Item, DispenserBehavior> BEHAVIORS = new HashMap();
     public ObsidianDispenser() {
         super(Settings.of(Material.STONE, MaterialColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
     }
@@ -46,14 +44,23 @@ public class ObsidianDispenser extends DispenserBlock {
         return super.getBehaviorForItem(stack);
     }
     public static void register() {
-        register(true);
+        if (Config.obsDispenser != null)
+            BLOCK = Registry.register(Registry.BLOCK, Main.id("obs_dispenser"), new ObsidianDispenser());
     }
-    public static void register(boolean vanilla) {
-        BLOCK = Registry.register(Registry.BLOCK, Main.id("obs_dispenser"), new ObsidianDispenser());
-        if(vanilla)
-            DispenserBlock.registerBehavior(Items.GUNPOWDER, new ItemDispenserBehavior() {
-                public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) { return ignite(pointer,stack,1); }
+    public static void registerPowder(){
+        if (Config.dispenseGunpowder != null) {
+            if (Config.dispenseGunpowder)
+                DispenserBlock.registerBehavior(Items.GUNPOWDER, new ItemDispenserBehavior() {
+                    public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+                        return ignite(pointer, stack, 1);
+                    }
+                });
+            registerBehavior(Items.GUNPOWDER, new ItemDispenserBehavior() {
+                public ItemStack dispenseSilently(BlockPointer pointer, ItemStack stack) {
+                    return ignite(pointer, stack, 4);
+                }
             });
+        }
     }
     public static ItemStack ignite(BlockPointer pointer, ItemStack stack, int min){
         BlockPos pos = pointer.getBlockPos().offset(pointer.getBlockState().get(DispenserBlock.FACING));
