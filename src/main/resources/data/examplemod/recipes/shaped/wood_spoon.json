@@ -1,0 +1,19 @@
+{
+  "type":"minecraft:crafting_shaped",
+  "pattern":[
+    "L  ",
+    "I  ",
+    "   "
+  ],
+  "key":{
+    "L":{
+      "tag":"minecraft:planks"
+    },
+    "I": {
+      "item":"minecraft:stick"
+    }
+  },
+  "result":{
+    "item":"examplemod:wood_spoon"
+  }
+}

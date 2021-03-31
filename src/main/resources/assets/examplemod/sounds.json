@@ -1,0 +1,12 @@
+{
+  "hit_spoon": {
+    "sounds":[
+      "examplemod:hit_spoon"
+    ]
+  },
+  "break_spoon": {
+    "sounds":[
+      "examplemod:break_spoon"
+    ]
+  }
+}
