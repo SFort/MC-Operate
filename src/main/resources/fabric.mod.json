@@ -16,7 +16,8 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": ["tf.ssf.sfort.Main"]
+    "main": ["tf.ssf.sfort.Main"],
+    "client": ["tf.ssf.sfort.MainClient"]
   },
 
   "depends": {
