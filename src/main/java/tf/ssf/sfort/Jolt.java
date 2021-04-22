@@ -1,21 +1,18 @@
 package tf.ssf.sfort;
 
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.render.*;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.BakedModel;
+import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.WorldRenderer;
+import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
+import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.client.util.math.Vector3f;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -30,14 +27,12 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import java.util.Collection;
-import java.util.Objects;
 
 public class Jolt extends Block implements BlockEntityProvider{
 	public static Block BLOCK;
@@ -64,11 +59,13 @@ public class Jolt extends Block implements BlockEntityProvider{
 	@Override
 	public ActionResult onUse(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockHitResult blockHitResult) {
 		ItemStack stack = player.getStackInHand(hand);
-		if (!world.isClient) {
+		if (!world.isClient && (stack.isEmpty() || stack.getItem() instanceof BlockItem)) {
 			JoltEntity e = (JoltEntity) world.getBlockEntity(blockPos);
 			if(e!=null) {
 				player.setStackInHand(hand, ItemStack.EMPTY);
 				e.replaceStack(stack);
+				e.markDirty();
+				e.sync();
 				return ActionResult.SUCCESS;
 			}
 		}
@@ -84,7 +81,7 @@ public class Jolt extends Block implements BlockEntityProvider{
 	@Override public Item asItem(){ return Items.DISPENSER; };
 	@Override public BlockEntity createBlockEntity(BlockView world) { return new JoltEntity(); }
 }
-class JoltEntity extends BlockEntity implements Inventory {
+class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSerializable {
 	public static BlockEntityType<JoltEntity> ENTITY_TYPE;
 	public static void register() {
 		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("jolt"), BlockEntityType.Builder.create(JoltEntity::new, Jolt.BLOCK).build(null));
@@ -122,6 +119,7 @@ class JoltEntity extends BlockEntity implements Inventory {
 		}else {
 			dir = 0;
 		}
+		markDirty();
 	}
 
 	protected JoltEntity(BlockEntityType<?> blockEntityType) {
@@ -167,37 +165,31 @@ class JoltEntity extends BlockEntity implements Inventory {
 		inv = ItemStack.fromTag(tag.getCompound("item"));
 		dir = tag.getByte("dir");
 	}
-}
-class JoltRenderer {
-	@Environment(EnvType.CLIENT)
-	public static void register() {
-		WorldRenderEvents.LAST.register(JoltRenderer::render);
-	}
 
-	//shortened rip from github.com/unascribed/Yttr
-	private static void render(WorldRenderContext wc) {
-		for (BlockEntity be : wc.world().blockEntities){
-			if(be instanceof JoltEntity){
-			JoltEntity entity = (JoltEntity) be;
-			if (entity.getPos().getSquaredDistance(wc.camera().getPos(), false) <4096 && Objects.requireNonNull(wc.frustum()).isVisible(new Box(entity.getPos()))){
-				render(entity, wc.tickDelta(), wc.matrixStack(), wc.camera());
-			}
-		}
-		}
+	@Override
+	public void fromClientTag(CompoundTag tag) { inv = ItemStack.fromTag(tag.getCompound("item")); }
+
+	@Override
+	public CompoundTag toClientTag(CompoundTag tag) {
+		CompoundTag t = new CompoundTag();
+		inv.toTag(t);
+		tag.put("item",t);
+		return tag;
 	}
-    public static void render(JoltEntity blockEntity, float tickDelta, MatrixStack matrix, Camera cam) {
-    	ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
+}
+class JoltRenderer extends BlockEntityRenderer<JoltEntity>{
+	public JoltRenderer(BlockEntityRenderDispatcher dispatcher) {
+		super(dispatcher);
+	}
+	public static void register(){
+		if(Config.fancyInv)
+			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, JoltRenderer::new);
+	}
+	@Override
+	public void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
-		matrix.translate(0.5, 1, 0.5);
-		matrix.multiply(Vector3f.POSITIVE_Y.getDegreesQuaternion((Objects.requireNonNull(blockEntity.getWorld()).getTime() + tickDelta) * 4));
-		BakedModel model = ir.getModels().getModel(blockEntity.inv);
-		model.getTransformation().gui.apply(false, matrix);
-		VertexConsumerProvider.Immediate imm = MinecraftClient.getInstance().getBufferBuilders().getEffectVertexConsumers();
-		if (cam != null) {
-			matrix.multiply(cam.getRotation());
-		}
-		ir.renderItem(blockEntity.inv, Mode.NONE, false, matrix, imm, LightmapTextureManager.pack(15, 15), OverlayTexture.DEFAULT_UV, model);
-		imm.draw();
+		matrix.translate(0.5, 0.75, 0.5);
+		MinecraftClient.getInstance().getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex);
 		matrix.pop();
 	}
 }

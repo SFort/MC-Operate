@@ -17,7 +17,8 @@ public class Config {
 	public static Boolean gunpowder = true;
 	public static Boolean obsDispenser = true;
 	public static Boolean dispenseGunpowder = true;
-	public static Boolean litSpoon = true;
+	public static boolean litSpoon = true;
+	public static boolean fancyInv = false;
 
 	public static void load() {
 		File confFile = new File(
@@ -32,8 +33,10 @@ public class Config {
 					"^-Obsidian Dispenser  [on] on | off | unregistered",
 					"^-Block Placer /Jolt  [on] on | off | unregistered",
 					"^-Placeable Gunpowder [on] on | off | unregistered",
-					"^-Spoon can turn on Lamps (blocks with LIT property) [true] true | false"
-			);
+					"^-Spoon can turn on Lamps (blocks with LIT property) [true] true | false",
+					//TODO maybe not send sync packet when disabled only on client
+					"^-Fancy Block inventory render  [true] true | false"
+					);
 			String[] ls = la.toArray(new String[Math.max(la.size(), defaultDesc.size() * 2) | 1]);
 			final int hash = Arrays.hashCode(ls);
 			for (int i = 0; i<defaultDesc.size();++i)
@@ -49,6 +52,8 @@ public class Config {
 			ls[6]=gunpowder==null?"unregistered": gunpowder?"on":"off";
 			try{litSpoon=!ls[8].contains("false");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#8\n" + e);}
 			ls[8]=litSpoon?"true":"false";
+			try{fancyInv=!ls[10].contains("false");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#10\n" + e);}
+			ls[10]=fancyInv?"true":"false";
 
 			if (hash != Arrays.hashCode(ls))
 				Files.write(confFile.toPath(), Arrays.asList(ls));
