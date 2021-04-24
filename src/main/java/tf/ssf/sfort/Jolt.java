@@ -26,13 +26,13 @@ import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.*;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import java.util.Collection;
+import java.util.Objects;
 
 public class Jolt extends Block implements BlockEntityProvider{
 	public static Block BLOCK;
@@ -182,14 +182,27 @@ class JoltRenderer extends BlockEntityRenderer<JoltEntity>{
 		super(dispatcher);
 	}
 	public static void register(){
+		if (Config.fancyInv != null)
 		if(Config.fancyInv)
 			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, JoltRenderer::new);
+		else
+			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, JoltLookRenderer::new);
 	}
 	@Override
 	public void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
 		matrix.translate(0.5, 0.75, 0.5);
-		MinecraftClient.getInstance().getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex);
+		MinecraftClient.getInstance().getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(entity.getWorld()), entity.getPos().up()), overlay, matrix, vertex);
 		matrix.pop();
+	}
+}
+class JoltLookRenderer extends JoltRenderer{
+	public JoltLookRenderer(BlockEntityRenderDispatcher dispatcher) {
+		super(dispatcher);
+	}
+	@Override
+	public void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		if(MinecraftClient.getInstance().cameraEntity != null && MinecraftClient.getInstance().cameraEntity.raycast(8, tickDelta,false).getPos().squaredDistanceTo(entity.getPos().getX()+0.5, entity.getPos().getY()+1, entity.getPos().getZ()+0.5)<0.6)
+			super.render(entity, tickDelta, matrix, vertex, light, overlay);
 	}
 }
