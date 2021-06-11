@@ -1,16 +1,14 @@
-package tf.ssf.sfort;
+package tf.ssf.sfort.operate;
 
 
 import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRenderDispatcher;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation.Mode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.ItemEntity;
@@ -20,24 +18,26 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
-import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import java.util.Collection;
 import java.util.Objects;
 
+import static tf.ssf.sfort.operate.client.McClient.mc;
+
 public class Jolt extends Block implements BlockEntityProvider{
 	public static Block BLOCK;
 	public Jolt() {
-		super(Settings.of(Material.STONE, MaterialColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
+		super(Settings.of(Material.STONE, MapColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
 	}
 	@Override
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
@@ -79,12 +79,12 @@ public class Jolt extends Block implements BlockEntityProvider{
 		}
 	}
 	@Override public Item asItem(){ return Items.DISPENSER; };
-	@Override public BlockEntity createBlockEntity(BlockView world) { return new JoltEntity(); }
+	@Override public BlockEntity createBlockEntity(BlockPos pos, BlockState state) { return new JoltEntity(pos, state); }
 }
 class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSerializable {
 	public static BlockEntityType<JoltEntity> ENTITY_TYPE;
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("jolt"), BlockEntityType.Builder.create(JoltEntity::new, Jolt.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("jolt"), FabricBlockEntityTypeBuilder.create(JoltEntity::new, Jolt.BLOCK).build(null));
 	}
 	public ItemStack inv = ItemStack.EMPTY;
 	private byte dir = 0;
@@ -122,11 +122,8 @@ class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSeri
 		markDirty();
 	}
 
-	protected JoltEntity(BlockEntityType<?> blockEntityType) {
-		super(blockEntityType);
-	}
-
-	public JoltEntity() { super(ENTITY_TYPE); }
+	protected JoltEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState state) { super(blockEntityType, blockPos, state); }
+	public JoltEntity(BlockPos blockPos, BlockState state) { super(ENTITY_TYPE, blockPos, state); }
 	public void dropInv(){ if (world !=null && inv!=ItemStack.EMPTY) world.spawnEntity(new ItemEntity(world, pos.getX()+0.5,pos.getY()+1,pos.getZ()+0.5,inv.copy())); }
 	public void replaceStack(ItemStack item){ dropInv();inv=item; }
 	@Override public void setStack(int slot, ItemStack stack) { if(slot==0)inv=stack; }
@@ -151,58 +148,48 @@ class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSeri
 		return ItemStack.EMPTY;
 	}
 	@Override
-	public CompoundTag toTag(CompoundTag tag) {
-		super.toTag(tag);
-		CompoundTag t = new CompoundTag();
-		inv.toTag(t);
+	public NbtCompound writeNbt(NbtCompound tag) {
+		super.writeNbt(tag);
+		NbtCompound t = new NbtCompound();
+		inv.writeNbt(t);
 		tag.put("item",t);
 		tag.putByte("dir",dir);
 		return tag;
 	}
 	@Override
-	public void fromTag(BlockState state, CompoundTag tag) {
-		super.fromTag(state, tag);
-		inv = ItemStack.fromTag(tag.getCompound("item"));
+	public void readNbt(NbtCompound tag) {
+		super.readNbt(tag);
+		inv = ItemStack.fromNbt(tag.getCompound("item"));
 		dir = tag.getByte("dir");
 	}
 
 	@Override
-	public void fromClientTag(CompoundTag tag) { inv = ItemStack.fromTag(tag.getCompound("item")); }
+	public void fromClientTag(NbtCompound tag) { inv = ItemStack.fromNbt(tag.getCompound("item")); }
 
 	@Override
-	public CompoundTag toClientTag(CompoundTag tag) {
-		CompoundTag t = new CompoundTag();
-		inv.toTag(t);
+	public NbtCompound toClientTag(NbtCompound tag) {
+		NbtCompound t = new NbtCompound();
+		inv.writeNbt(t);
 		tag.put("item",t);
 		return tag;
 	}
 }
-class JoltRenderer extends BlockEntityRenderer<JoltEntity>{
-	public JoltRenderer(BlockEntityRenderDispatcher dispatcher) {
-		super(dispatcher);
-	}
+class JoltRenderer{
 	public static void register(){
 		if (Config.fancyInv != null)
 		if(Config.fancyInv)
-			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, JoltRenderer::new);
+			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, ctx -> JoltRenderer::render);
 		else
-			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, JoltLookRenderer::new);
+			BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, ctx -> JoltRenderer::look_render);
 	}
-	@Override
-	public void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+	public static void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
 		matrix.translate(0.5, 0.75, 0.5);
-		MinecraftClient.getInstance().getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(entity.getWorld()), entity.getPos().up()), overlay, matrix, vertex);
+		mc.getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(entity.getWorld()), entity.getPos().up()), overlay, matrix, vertex, 1);
 		matrix.pop();
 	}
-}
-class JoltLookRenderer extends JoltRenderer{
-	public JoltLookRenderer(BlockEntityRenderDispatcher dispatcher) {
-		super(dispatcher);
-	}
-	@Override
-	public void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
-		if(MinecraftClient.getInstance().cameraEntity != null && MinecraftClient.getInstance().cameraEntity.raycast(8, tickDelta,false).getPos().squaredDistanceTo(entity.getPos().getX()+0.5, entity.getPos().getY()+1, entity.getPos().getZ()+0.5)<0.6)
-			super.render(entity, tickDelta, matrix, vertex, light, overlay);
+	public static void look_render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		if(mc.cameraEntity != null && mc.cameraEntity.raycast(8, tickDelta,false).getPos().squaredDistanceTo(entity.getPos().getX()+0.5, entity.getPos().getY()+1, entity.getPos().getZ()+0.5)<0.6)
+			render(entity, tickDelta, matrix, vertex, light, overlay);
 	}
 }

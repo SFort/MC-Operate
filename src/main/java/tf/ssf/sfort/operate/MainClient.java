@@ -1,7 +1,6 @@
-package tf.ssf.sfort;
+package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ClientModInitializer;
-import net.minecraft.util.Identifier;
 
 
 public class MainClient implements ClientModInitializer {

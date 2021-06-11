@@ -1,4 +1,4 @@
-package tf.ssf.sfort;
+package tf.ssf.sfort.operate;
 
 import net.fabricmc.loader.api.FabricLoader;
 import org.apache.logging.log4j.Level;

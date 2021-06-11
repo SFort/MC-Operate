@@ -1,4 +1,4 @@
-package tf.ssf.sfort;
+package tf.ssf.sfort.operate;
 
 import net.minecraft.block.*;
 import net.minecraft.entity.player.PlayerEntity;
@@ -34,7 +34,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	}
 	public static void register(){
 		if (Config.gunpowder != null)
-			BLOCK = Registry.register(Registry.BLOCK,new Identifier("operate","gunpowder"),new Gunpowder(AbstractBlock.Settings.of(Material.SUPPORTED).noCollision().breakInstantly()));;
+			BLOCK = Registry.register(Registry.BLOCK,new Identifier("operate","gunpowder"),new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));;
 	}
 	@Override
 	public Item asItem(){ return Items.GUNPOWDER; };

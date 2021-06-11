@@ -1,11 +1,7 @@
-package tf.ssf.sfort;
+package tf.ssf.sfort.operate;
 
 
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DispenserBlock;
-import net.minecraft.block.Material;
-import net.minecraft.block.MaterialColor;
+import net.minecraft.block.*;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.entity.LivingEntity;
@@ -30,7 +26,7 @@ public class ObsidianDispenser extends DispenserBlock {
 	public static Block BLOCK;
 	private static final Map<Item, DispenserBehavior> BEHAVIORS = new HashMap<>();
 	public ObsidianDispenser() {
-		super(Settings.of(Material.STONE, MaterialColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
+		super(Settings.of(Material.STONE, MapColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
 	}
 	public ObsidianDispenser(Settings settings) {
 		super(settings);

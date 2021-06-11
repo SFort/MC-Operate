@@ -16,10 +16,13 @@
 
   "environment": "*",
   "entrypoints": {
-    "main": ["tf.ssf.sfort.Main"],
-    "client": ["tf.ssf.sfort.MainClient"]
+    "main": [
+      "tf.ssf.sfort.operate.Main"
+    ],
+    "client": [
+      "tf.ssf.sfort.operate.MainClient"
+    ]
   },
-
   "depends": {
     "fabricloader": "*",
     "fabric": "*",
