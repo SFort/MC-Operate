@@ -1,7 +1,6 @@
 package tf.ssf.sfort.operate;
 
 
-import net.fabricmc.fabric.api.block.entity.BlockEntityClientSerializable;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.*;
@@ -19,6 +18,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.Packet;
+import net.minecraft.network.listener.ClientPlayPacketListener;
+import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.ActionResult;
@@ -65,7 +68,6 @@ public class Jolt extends Block implements BlockEntityProvider{
 				player.setStackInHand(hand, ItemStack.EMPTY);
 				e.replaceStack(stack);
 				e.markDirty();
-				e.sync();
 				return ActionResult.SUCCESS;
 			}
 		}
@@ -81,7 +83,7 @@ public class Jolt extends Block implements BlockEntityProvider{
 	@Override public Item asItem(){ return Items.DISPENSER; };
 	@Override public BlockEntity createBlockEntity(BlockPos pos, BlockState state) { return new JoltEntity(pos, state); }
 }
-class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSerializable {
+class JoltEntity extends BlockEntity implements Inventory {
 	public static BlockEntityType<JoltEntity> ENTITY_TYPE;
 	public static void register() {
 		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("jolt"), FabricBlockEntityTypeBuilder.create(JoltEntity::new, Jolt.BLOCK).build(null));
@@ -148,13 +150,12 @@ class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSeri
 		return ItemStack.EMPTY;
 	}
 	@Override
-	public NbtCompound writeNbt(NbtCompound tag) {
+	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);
 		NbtCompound t = new NbtCompound();
 		inv.writeNbt(t);
 		tag.put("item",t);
 		tag.putByte("dir",dir);
-		return tag;
 	}
 	@Override
 	public void readNbt(NbtCompound tag) {
@@ -164,15 +165,27 @@ class JoltEntity extends BlockEntity implements Inventory, BlockEntityClientSeri
 	}
 
 	@Override
-	public void fromClientTag(NbtCompound tag) { inv = ItemStack.fromNbt(tag.getCompound("item")); }
-
+	public Packet<ClientPlayPacketListener> toUpdatePacket(){
+		return BlockEntityUpdateS2CPacket.create(
+				this,
+				b -> toInitialChunkDataNbt()
+		);
+	}
 	@Override
-	public NbtCompound toClientTag(NbtCompound tag) {
-		NbtCompound t = new NbtCompound();
-		inv.writeNbt(t);
-		tag.put("item",t);
+	public void markDirty() {
+		super.markDirty();
+
+		if (this.getWorld() != null && !this.getWorld().isClient()) {
+			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+		}
+	}
+	@Override
+	public NbtCompound toInitialChunkDataNbt() {
+		NbtCompound tag = new NbtCompound();
+		tag.put("item", inv.writeNbt(new NbtCompound()));
 		return tag;
 	}
+
 }
 class JoltRenderer{
 	public static void register(){

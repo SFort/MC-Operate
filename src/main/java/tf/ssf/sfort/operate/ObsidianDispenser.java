@@ -67,7 +67,7 @@ public class ObsidianDispenser extends DispenserBlock {
 				});*/
 	}
 	public static ItemStack ignite(BlockPointer pointer, ItemStack stack, int min){
-		BlockPos pos = pointer.getBlockPos().offset(pointer.getBlockState().get(DispenserBlock.FACING));
+		BlockPos pos = pointer.getPos().offset(pointer.getBlockState().get(DispenserBlock.FACING));
 		if (stack.getCount() < min) min = stack.getCount();
 		stack.decrement(min);
 		ServerWorld w = pointer.getWorld();

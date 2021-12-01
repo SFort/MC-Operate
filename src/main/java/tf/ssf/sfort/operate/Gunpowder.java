@@ -21,6 +21,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
+import net.minecraft.world.tick.OrderedTick;
 
 import java.util.Random;
 
@@ -50,10 +51,10 @@ public class Gunpowder extends HorizontalConnectingBlock {
 			world.setBlockState(pos, state.with(TRIGGERED, true));
 			for (Direction dir : Direction.Type.HORIZONTAL)
 				if (world.getBlockState(pos.up().offset(dir)).getBlock() instanceof Gunpowder)
-					world.getBlockTickScheduler().schedule(pos.up().offset(dir), this, time);;
+					world.createAndScheduleBlockTick(pos.up().offset(dir), this, time);
 
 			world.updateNeighbors(pos.down(), this);
-			world.getBlockTickScheduler().schedule(pos, this, time);
+			world.createAndScheduleBlockTick(pos, this, time);
 		}
 	}
 	@Override
@@ -70,17 +71,16 @@ public class Gunpowder extends HorizontalConnectingBlock {
 					itemStack.decrement(1);
 				}
 			}
-			world.getBlockTickScheduler().schedule(pos, this, time);
+			world.createAndScheduleBlockTick(pos, this, time);
+
 			return ActionResult.success(world.isClient);
 		}
 		return super.onUse(state, world, pos, player, hand, hit);
 	}
 	@Override
 	public void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
-		if (!world.isClient) {
-			if (projectile.isOnFire())
-				world.getBlockTickScheduler().schedule(hit.getBlockPos(), this, time);
-		}
+		if (!world.isClient && projectile.isOnFire())
+			world.createAndScheduleBlockTick(hit.getBlockPos(), this, time);
 
 	}
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
@@ -88,9 +88,8 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	}
 	public BlockState getPlacementState(World world, BlockPos pos) {
 		boolean pow = world.isReceivingRedstonePower(pos);
-		if(pow) {
-			world.getBlockTickScheduler().schedule(pos, this, time);
-		}
+		if(pow)
+			world.createAndScheduleBlockTick(pos, this, time);
 		return this.getDefaultState()
 				.with(TRIGGERED, pow)
 				.with(NORTH, !world.getBlockState(pos.north()).getMaterial().isReplaceable())
@@ -102,7 +101,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
 		if(fromPos.getY()<pos.getY() && !world.getBlockState(fromPos).isFullCube(world,fromPos)){world.breakBlock(pos,true); return;}
 		if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up()) && !state.get(TRIGGERED)) {
-			world.getBlockTickScheduler().schedule(pos, this, time);
+			world.createAndScheduleBlockTick(pos, this, time);
 		}
 	}
 	public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
