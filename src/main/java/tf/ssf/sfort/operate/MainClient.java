@@ -7,5 +7,6 @@ public class MainClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		JoltRenderer.register();
+		PunchRenderer.register();
 	}
 }

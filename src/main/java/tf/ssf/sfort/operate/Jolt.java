@@ -198,7 +198,7 @@ class JoltRenderer{
 	public static void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
 		matrix.translate(0.5, 0.75, 0.5);
-		mc.getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(Objects.requireNonNull(entity.getWorld()), entity.getPos().up()), overlay, matrix, vertex, 1);
+		mc.getItemRenderer().renderItem(entity.inv, Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, 1);
 		matrix.pop();
 	}
 	public static void look_render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {

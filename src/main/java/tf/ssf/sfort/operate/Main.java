@@ -10,6 +10,7 @@ public class Main implements ModInitializer {
 		Config.load();
 		Gunpowder.register();
 		Jolt.register();
+		Punch.register();
 		ObsidianDispenser.registerPowder();
 		ObsidianDispenser.register();
 		Spoon.register();
