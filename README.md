@@ -4,6 +4,7 @@ Client and Server side
 ![](img/2.gif)
 ![](img/3.gif)
 ![](img/4.gif)
+![](img/5.gif)
 #### Features:
 - Dispensers can use gunpowder
 - Adds Obsidian Dispenser (can use more gunpowder)
@@ -11,5 +12,6 @@ Client and Server side
 - Adds Placable Gunpowder
 - Spoon  
   can turn on lamps (or other blocks that can be lit)
+- Adds Auto Crafter
 - ...in future, if i'm not lazy
 
