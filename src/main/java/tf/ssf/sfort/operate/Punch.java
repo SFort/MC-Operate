@@ -283,8 +283,7 @@ class PunchEntity extends BlockEntity implements Inventory {
 		if(this.canCraft()){
 			ItemStack ret = craftResult.get().craft(inv);
 			inv.clear();
-			if(world != null)
-				world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
+			world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
 			return ret;
 		}
 		return inv.removeStack(PunchInventory.sequence[slot]);
