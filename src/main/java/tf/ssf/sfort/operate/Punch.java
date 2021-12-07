@@ -1,6 +1,7 @@
 package tf.ssf.sfort.operate;
 
 
+import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.*;
@@ -19,6 +20,8 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.particle.ParticleTypes;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeMatcher;
 import net.minecraft.recipe.RecipeType;
@@ -102,9 +105,18 @@ public class Punch extends Block implements BlockEntityProvider{
 	}
 	public Punch(Settings settings) {super(settings);}
 	public static void register() {
-		if (Config.jolt != null) {
+		if (Config.punch != null) {
 			BLOCK = Registry.register(Registry.BLOCK, Main.id("punch"), new Punch());
 			PunchEntity.register();
+			if (Config.punch)
+				Spoon.CRAFT.put(new Pair<>(Blocks.PISTON, Blocks.CRAFTING_TABLE), (world, pos, cpos, state, cstate) -> {
+					world.removeBlock(pos, false);
+					if (world instanceof ServerWorld) {
+						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
+						world.playSound(null, pos, Spoon.BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
+					}
+					world.setBlockState(cpos, Punch.BLOCK.getDefaultState());
+				});
 		}
 	}
 	@Override public Item asItem(){return Items.PISTON;}
@@ -299,11 +311,8 @@ class PunchEntity extends BlockEntity implements Inventory {
 
 class PunchRenderer{
 	public static void register(){
-		if (Config.fancyInv != null)
-		if(Config.fancyInv)
-			BlockEntityRendererRegistry.INSTANCE.register(PunchEntity.ENTITY_TYPE, ctx -> PunchRenderer::render);
-		else
-			BlockEntityRendererRegistry.INSTANCE.register(PunchEntity.ENTITY_TYPE, ctx -> PunchRenderer::look_render);
+		if (Config.fancyInv == null || Config.punch == null) return;
+		BlockEntityRendererRegistry.INSTANCE.register(PunchEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> PunchRenderer::render : ctx -> PunchRenderer::look_render);
 	}
 	public static void render(PunchEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		if (!(entity.craftResultDisplay.isEmpty() || entity.getCachedState().get(Punch.POWERED))) {

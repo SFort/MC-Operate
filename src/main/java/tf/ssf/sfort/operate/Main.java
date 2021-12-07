@@ -14,7 +14,6 @@ public class Main implements ModInitializer {
 		ObsidianDispenser.registerPowder();
 		ObsidianDispenser.register();
 		Spoon.register();
-		Spoon.SpoonDo.register();
 		//BP.register();
 	}
 	public static Identifier id(String name){

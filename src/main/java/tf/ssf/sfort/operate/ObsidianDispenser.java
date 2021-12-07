@@ -1,6 +1,7 @@
 package tf.ssf.sfort.operate;
 
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.*;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
@@ -10,8 +11,10 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPointer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
@@ -40,8 +43,18 @@ public class ObsidianDispenser extends DispenserBlock {
 		return super.getBehaviorForItem(stack);
 	}
 	public static void register() {
-		if (Config.obsDispenser != null)
+		if (Config.obsDispenser != null) {
 			BLOCK = Registry.register(Registry.BLOCK, Main.id("obs_dispenser"), new ObsidianDispenser());
+			if (Config.obsDispenser)
+				Spoon.CRAFT.put(new Pair<>(Blocks.OBSIDIAN, Blocks.DISPENSER), (world, pos, cpos, state, cstate) -> {
+					world.removeBlock(pos, false);
+					if (world instanceof ServerWorld) {
+						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
+						world.playSound(null, pos, Spoon.BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
+					}
+					world.setBlockState(cpos, ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, cstate.get(DispenserBlock.FACING)));
+				});
+		}
 	}
 	public static void registerPowder(){
 		if (Config.dispenseGunpowder != null) {

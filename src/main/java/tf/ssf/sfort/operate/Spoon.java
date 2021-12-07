@@ -3,14 +3,9 @@ package tf.ssf.sfort.operate;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DispenserBlock;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.passive.PigEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.*;
-import net.minecraft.particle.BlockStateParticleEffect;
-import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -91,26 +86,5 @@ public class Spoon extends Item {
 	//Still bad but better
 	public interface SpoonDo{
 		void act(World world, BlockPos pos, BlockPos cpos, BlockState state, BlockState cstate);
-		static void register(){
-			if(Config.obsDispenser)
-				CRAFT.put(new Pair<>(Blocks.OBSIDIAN, Blocks.DISPENSER), (world, pos, cpos, state, cstate) -> {
-					world.removeBlock(pos, false);
-					if (world instanceof ServerWorld) {
-						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
-						world.playSound(null, pos, BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
-					}
-					world.setBlockState(cpos, ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, cstate.get(DispenserBlock.FACING)));
-				});
-			if(Config.jolt)
-				CRAFT.put(new Pair<>(Blocks.SOUL_SAND, ObsidianDispenser.BLOCK), (world, pos, cpos, state, cstate) -> {
-					world.removeBlock(pos, false);
-					if (world instanceof ServerWorld) {
-						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
-						world.playSound(null, pos, SoundEvents.PARTICLE_SOUL_ESCAPE, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.1F + 0.6F);
-						world.playSound(null, pos, BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
-					}
-					world.setBlockState(cpos, Jolt.BLOCK.getDefaultState());
-				});
-		}
 	}
 }
