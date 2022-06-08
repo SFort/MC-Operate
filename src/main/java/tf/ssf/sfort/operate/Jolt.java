@@ -2,7 +2,7 @@ package tf.ssf.sfort.operate;
 
 
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -204,7 +204,7 @@ class JoltEntity extends BlockEntity implements Inventory {
 class JoltRenderer{
 	public static void register(){
 		if (Config.fancyInv == null || Config.jolt == null) return;
-		BlockEntityRendererRegistry.INSTANCE.register(JoltEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> JoltRenderer::render : ctx -> JoltRenderer::look_render);
+		BlockEntityRendererRegistry.register(JoltEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> JoltRenderer::render : ctx -> JoltRenderer::look_render);
 	}
 	public static void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();

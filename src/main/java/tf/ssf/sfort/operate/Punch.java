@@ -2,7 +2,7 @@ package tf.ssf.sfort.operate;
 
 
 import com.mojang.datafixers.util.Pair;
-import net.fabricmc.fabric.api.client.rendereregistry.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.*;
 import net.minecraft.block.entity.BlockEntity;
@@ -311,7 +311,7 @@ class PunchEntity extends BlockEntity implements Inventory {
 class PunchRenderer{
 	public static void register(){
 		if (Config.fancyInv == null || Config.punch == null) return;
-		BlockEntityRendererRegistry.INSTANCE.register(PunchEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> PunchRenderer::render : ctx -> PunchRenderer::look_render);
+		BlockEntityRendererRegistry.register(PunchEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> PunchRenderer::render : ctx -> PunchRenderer::look_render);
 	}
 	public static void render(PunchEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		if (!(entity.craftResultDisplay.isEmpty() || entity.getCachedState().get(Punch.POWERED))) {
