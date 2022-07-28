@@ -2,7 +2,11 @@ package tf.ssf.sfort.operate;
 
 
 import com.mojang.datafixers.util.Pair;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DispenserBlock;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.Material;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.entity.LivingEntity;
@@ -37,7 +41,7 @@ public class ObsidianDispenser extends DispenserBlock {
 	public static void registerBehavior(ItemConvertible provider, DispenserBehavior behavior) {
 		BEHAVIORS.put(provider.asItem(), behavior);
 	}
-	protected DispenserBehavior getBehaviorForItem(ItemStack stack) {
+	public DispenserBehavior getBehaviorForItem(ItemStack stack) {
 		if (BEHAVIORS.containsKey(stack.getItem()))
 			return BEHAVIORS.get(stack.getItem());
 		return super.getBehaviorForItem(stack);

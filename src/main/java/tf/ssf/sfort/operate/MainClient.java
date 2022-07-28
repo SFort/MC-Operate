@@ -8,5 +8,6 @@ public class MainClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		JoltRenderer.register();
 		PunchRenderer.register();
+		//BitStakRenderer.register();
 	}
 }

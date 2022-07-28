@@ -14,6 +14,7 @@ public class Main implements ModInitializer {
 		ObsidianDispenser.registerPowder();
 		ObsidianDispenser.register();
 		Spoon.register();
+		BitStak.register();
 		//BP.register();
 	}
 	public static Identifier id(String name){

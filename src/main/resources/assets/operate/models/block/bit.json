@@ -1,0 +1,8 @@
+{
+  "parent": "block/orientable",
+  "textures": {
+    "top": "operate:block/bit_side",
+    "front": "operate:block/bit_front",
+    "side": "operate:block/bit_side"
+  }
+}

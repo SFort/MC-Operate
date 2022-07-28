@@ -15,7 +15,10 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.CraftingInventory;
 import net.minecraft.inventory.Inventory;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemPlacementContext;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
@@ -54,7 +57,7 @@ public class Punch extends Block implements BlockEntityProvider{
 		setDefaultState(stateManager.getDefaultState().with(POWERED, false));
 	}
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+	public void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		builder.add(POWERED);
 	}
 	@Override
@@ -201,7 +204,7 @@ class PunchEntity extends BlockEntity implements Inventory {
 	public final PunchInventory inv = new PunchInventory();
 	public Optional<CraftingRecipe> craftResult = Optional.empty();
 	public ItemStack craftResultDisplay = ItemStack.EMPTY;
-	protected PunchEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState state) {
+	public PunchEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState state) {
 		super(blockEntityType, blockPos, state);
 	}
 	public PunchEntity(BlockPos blockPos, BlockState state) {

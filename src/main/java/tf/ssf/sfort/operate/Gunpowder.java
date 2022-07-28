@@ -1,6 +1,10 @@
 package tf.ssf.sfort.operate;
 
-import net.minecraft.block.*;
+import net.minecraft.block.AbstractBlock;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.HorizontalConnectingBlock;
+import net.minecraft.block.Material;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
@@ -27,13 +31,27 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	public static final int time = 7;
 	public static final BooleanProperty TRIGGERED = Properties.TRIGGERED;
 	public static Block BLOCK;
-	protected Gunpowder(Settings settings) {
+	public Gunpowder(Settings settings) {
 		super(8.0F, 0.0F, 1.0F, 1.0F, 1.0F, settings);
 		this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(WATERLOGGED, false));
 	}
 	public static void register(){
-		if (Config.gunpowder != null)
-			BLOCK = Registry.register(Registry.BLOCK,new Identifier("operate","gunpowder"),new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));;
+		if (Config.gunpowder != null) {
+			BLOCK = Registry.register(Registry.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));
+			if (Config.gunpowder) {
+				Spoon.PLACE.put(Items.GUNPOWDER, (context -> {
+					World world = context.getWorld();
+					PlayerEntity p = context.getPlayer();
+					BlockPos gpos = context.getBlockPos().offset(context.getSide());
+					if (p != null && world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), context.getSide()) && world.getBlockState(gpos).isAir()) {
+						world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
+						p.getOffHandStack().decrement(1);
+						return true;
+					}
+					return false;
+				}));
+			}
+		}
 	}
 	@Override
 	public Item asItem(){ return Items.GUNPOWDER; };
@@ -108,7 +126,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 				:super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
 	}
 
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+	public void appendProperties(StateManager.Builder<Block, BlockState> builder) {
 		builder.add(NORTH, EAST, WEST, SOUTH, WATERLOGGED, TRIGGERED);
 	}
 	public void rainTick(World world, BlockPos pos) {

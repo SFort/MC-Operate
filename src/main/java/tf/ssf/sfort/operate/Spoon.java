@@ -5,7 +5,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.*;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -18,11 +21,13 @@ import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Predicate;
 
 public class Spoon extends Item {
 	public static final SoundEvent HIT = new SoundEvent(Main.id("hit_spoon"));
 	public static SoundEvent BREAK = new SoundEvent(Main.id("break_spoon"));
 	public static Map<Pair<Block,Block>, SpoonDo> CRAFT = new HashMap<>();
+	public static Map<Item, Predicate<ItemUsageContext>> PLACE = new HashMap<>();
 	public static Item ITEM;
 
 	public static void register() {
@@ -30,9 +35,7 @@ public class Spoon extends Item {
 		//Registry.register(Registry.SOUND_EVENT, BREAK.getId(), BREAK);
 		ITEM = Registry.register(Registry.ITEM, Main.id("wood_spoon"), new Spoon());
 	}
-	public static void addCraft(Pair<Block,Block> pair, SpoonDo action){
-		CRAFT.put(pair, action);
-	}
+
 	public Spoon() {
 		super(new Settings().group(ItemGroup.TOOLS).maxDamage(4));
 	}
@@ -42,16 +45,17 @@ public class Spoon extends Item {
 	}
 
 	public ActionResult useOnBlock(ItemUsageContext context) {
+		{
+			PlayerEntity p = context.getPlayer();
+			if (p != null) {
+				Predicate<ItemUsageContext> placeBlock = PLACE.get(p.getOffHandStack().getItem());
+				if (placeBlock != null) {
+					if (placeBlock.test(context)) return ActionResult.SUCCESS;
+				}
+			}
+		}
 		World world = context.getWorld();
 		BlockPos pos = context.getBlockPos();
-		PlayerEntity p = context.getPlayer();
-		//gunpowder place
-		BlockPos gpos = pos.offset(context.getSide());
-		if (Config.gunpowder && p != null && p.getOffHandStack().getItem().equals(Items.GUNPOWDER) && world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), context.getSide()) && world.getBlockState(gpos).isAir()) {
-			world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
-			p.getOffHandStack().decrement(1);
-			return ActionResult.SUCCESS;
-		}
 		ItemStack stack = context.getStack();
 		stack.setDamage(stack.getDamage()-1);
 
@@ -60,8 +64,11 @@ public class Spoon extends Item {
 			BlockPos cpos = pos.offset(context.getSide().getOpposite());
 			BlockState cstate = world.getBlockState(cpos);
 			Pair<Block, Block> key = new Pair<>(state.getBlock(), cstate.getBlock());
-			if(CRAFT.containsKey(key))
+			if (CRAFT.containsKey(key)){
 				CRAFT.get(key).act(world, pos, cpos, state, cstate);
+			} else if (world instanceof ServerWorld) {
+				world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+			}
 			if (Config.litSpoon && state.getProperties().contains(Properties.LIT)) {
 				if (world instanceof ServerWorld) {
 					world.playSound(null, pos, SoundEvents.BLOCK_LEVER_CLICK, SoundCategory.BLOCKS, 1.0F, world.getRandom().nextFloat() * 0.1F + 0.9F);
@@ -69,8 +76,8 @@ public class Spoon extends Item {
 				world.setBlockState(pos, state.with(Properties.LIT, true), 0);
 			}
 			stack.setDamage(getMaxDamage());
-		} else {
-			world.playSound(p, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+		} else if (world instanceof ServerWorld) {
+			world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
 		}
 		return ActionResult.SUCCESS;
 	}
@@ -87,4 +94,5 @@ public class Spoon extends Item {
 	public interface SpoonDo{
 		void act(World world, BlockPos pos, BlockPos cpos, BlockState state, BlockState cstate);
 	}
+
 }

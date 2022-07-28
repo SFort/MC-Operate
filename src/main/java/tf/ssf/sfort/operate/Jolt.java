@@ -4,7 +4,13 @@ package tf.ssf.sfort.operate;
 import com.mojang.datafixers.util.Pair;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
-import net.minecraft.block.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockEntityProvider;
+import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.Material;
+import net.minecraft.block.PistonHeadBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -41,7 +47,7 @@ import java.util.Collection;
 
 import static tf.ssf.sfort.operate.client.McClient.mc;
 
-public class Jolt extends Block implements BlockEntityProvider{
+public class Jolt extends Block implements BlockEntityProvider {
 	public static Block BLOCK;
 	public Jolt() {
 		super(Settings.of(Material.STONE, MapColor.BLACK).requiresTool().strength(50.0F, Blocks.OBSIDIAN.getBlastResistance()));
@@ -83,7 +89,7 @@ public class Jolt extends Block implements BlockEntityProvider{
 			BLOCK = Registry.register(Registry.BLOCK, Main.id("jolt"), new Jolt());
 			JoltEntity.register();
 			if (Config.jolt && Config.obsDispenser != null)
-				Spoon.CRAFT.put(new Pair<>(Blocks.SOUL_SAND, ObsidianDispenser.BLOCK), (world, pos, cpos, state, cstate) -> {
+				Spoon.CRAFT.put(new Pair<>(Blocks.SOUL_SAND, Blocks.OBSIDIAN), (world, pos, cpos, state, cstate) -> {
 					world.removeBlock(pos, false);
 					if (world instanceof ServerWorld) {
 						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
@@ -138,7 +144,7 @@ class JoltEntity extends BlockEntity implements Inventory {
 		markDirty();
 	}
 
-	protected JoltEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState state) { super(blockEntityType, blockPos, state); }
+	public JoltEntity(BlockEntityType<?> blockEntityType, BlockPos blockPos, BlockState state) { super(blockEntityType, blockPos, state); }
 	public JoltEntity(BlockPos blockPos, BlockState state) { super(ENTITY_TYPE, blockPos, state); }
 	public void dropInv(){ if (world !=null && inv!=ItemStack.EMPTY) world.spawnEntity(new ItemEntity(world, pos.getX()+0.5,pos.getY()+1,pos.getZ()+0.5,inv.copy())); }
 	public void replaceStack(ItemStack item){ dropInv();inv=item; }

@@ -5,5 +5,4 @@ import net.minecraft.client.gui.screen.Screen;
 
 public class McClient {
     public static final MinecraftClient mc = MinecraftClient.getInstance();
-    public static Screen screen;
 }

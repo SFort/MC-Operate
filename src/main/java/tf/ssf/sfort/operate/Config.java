@@ -13,6 +13,7 @@ import java.util.List;
 
 public class Config {
 	public static Logger LOGGER = LogManager.getLogger();
+	public static Boolean bit = true;
 	public static Boolean jolt = true;
 	public static Boolean punch = true;
 	public static Boolean gunpowder = true;
