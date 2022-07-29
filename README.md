@@ -13,5 +13,6 @@ Client and Server side
 - Spoon  
   can turn on lamps (or other blocks that can be lit)
 - Adds Auto Crafter
+- Computer
 - ...in future, if i'm not lazy
 
