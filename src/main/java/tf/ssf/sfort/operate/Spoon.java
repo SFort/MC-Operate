@@ -31,8 +31,8 @@ public class Spoon extends Item {
 	public static Item ITEM;
 
 	public static void register() {
-		//Registry.register(Registry.SOUND_EVENT, HIT.getId(), HIT);
-		//Registry.register(Registry.SOUND_EVENT, BREAK.getId(), BREAK);
+		Registry.register(Registry.SOUND_EVENT, HIT.getId(), HIT);
+		Registry.register(Registry.SOUND_EVENT, BREAK.getId(), BREAK);
 		ITEM = Registry.register(Registry.ITEM, Main.id("wood_spoon"), new Spoon());
 	}
 

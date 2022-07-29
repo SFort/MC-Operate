@@ -97,7 +97,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 		bldr.put(Items.COPPER_INGOT, BitStakEntity::computeLesser);
 		bldr.put(Items.LAPIS_LAZULI, BitStakEntity::computeDiv);
 		bldr.put(Items.BONE, BitStakEntity::computeMul);
-		bldr.put(Items.HONEY_BOTTLE, BitStakEntity::computeAnd);
+		bldr.put(Items.GLASS_BOTTLE, BitStakEntity::computeAnd);
 		bldr.put(Items.FURNACE, BitStakEntity::computeXor);
 		bldr.put(Items.REDSTONE_TORCH, BitStakEntity::computeNot);
 		bldr.put(Items.TORCH, BitStakEntity::computeEquals);
@@ -110,7 +110,6 @@ public class BitStak extends Block implements BlockEntityProvider{
 		bldr.put(Items.AMETHYST_SHARD, BitStakEntity::computeSwap);
 		bldr.put(Items.BOWL, BitStakEntity::computeStore);
 		bldr.put(Items.QUARTZ, BitStakEntity::computeLoad);
-		bldr.put(Items.BUCKET, BitStakEntity::computeSwap);
 		bldr.put(Items.SUGAR, BitStakEntity::computeShiftLeft);
 		bldr.put(Items.SPIDER_EYE, BitStakEntity::computeShiftRight);
 		bldr.put(Items.ICE, entity -> true);
