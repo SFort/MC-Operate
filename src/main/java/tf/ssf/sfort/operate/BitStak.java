@@ -48,35 +48,72 @@ import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 import static tf.ssf.sfort.operate.client.McClient.mc;
 
 public class BitStak extends Block implements BlockEntityProvider{
-	public static final BooleanProperty POWERED = Properties.POWERED;
-	public static final DirectionProperty FACING = Properties.FACING;
-	public static final ImmutableMap<Item, Predicate<BitStakEntity>> VALID_INSNS;
+	public static BooleanProperty POWERED = Properties.POWERED;
+	public static DirectionProperty FACING = Properties.FACING;
+	public static ImmutableMap<Item, Predicate<BitStakEntity>> VALID_INSNS;
+	public static ImmutableMap<Item, Integer> VALID_CONST;
 	static {
+		ImmutableMap.Builder<Item, Integer> constBldr = new ImmutableMap.Builder<>();
+		constBldr.put(Items.CHARCOAL, -1);
+		constBldr.put(Items.GLASS, 0);
+		constBldr.put(Items.WHITE_DYE, 1);
+		constBldr.put(Items.ORANGE_DYE, 2);
+		constBldr.put(Items.MAGENTA_DYE, 3);
+		constBldr.put(Items.LIGHT_BLUE_DYE, 4);
+		constBldr.put(Items.YELLOW_DYE, 5);
+		constBldr.put(Items.LIME_DYE, 6);
+		constBldr.put(Items.PINK_DYE, 7);
+		constBldr.put(Items.GRAY_DYE, 8);
+		constBldr.put(Items.LIGHT_GRAY_DYE, 9);
+		constBldr.put(Items.CYAN_DYE, 10);
+		constBldr.put(Items.PURPLE_DYE, 11);
+		constBldr.put(Items.BLUE_DYE, 12);
+		constBldr.put(Items.BROWN_DYE, 13);
+		constBldr.put(Items.GREEN_DYE, 14);
+		constBldr.put(Items.RED_DYE, 15);
+		constBldr.put(Items.BLACK_DYE, 16);
+		VALID_CONST = constBldr.build();
 		ImmutableMap.Builder<Item, Predicate<BitStakEntity>> bldr = new ImmutableMap.Builder<>();
+		for (Map.Entry<Item, Integer> entry : VALID_CONST.entrySet()) {
+			int color = entry.getValue();
+			bldr.put(entry.getKey(), e -> e.computeConst(color));
+		}
 		bldr.put(Items.REDSTONE, BitStakEntity::computeAdd);
 		bldr.put(Items.STICK, BitStakEntity::computeSub);
-		bldr.put(Items.GOLD_NUGGET, BitStakEntity::computeGreater);
-		bldr.put(Items.IRON_NUGGET, BitStakEntity::computeLesser);
+		bldr.put(Items.IRON_INGOT, BitStakEntity::computeGreater);
+		bldr.put(Items.COPPER_INGOT, BitStakEntity::computeLesser);
 		bldr.put(Items.LAPIS_LAZULI, BitStakEntity::computeDiv);
 		bldr.put(Items.BONE, BitStakEntity::computeMul);
 		bldr.put(Items.HONEY_BOTTLE, BitStakEntity::computeAnd);
 		bldr.put(Items.FURNACE, BitStakEntity::computeXor);
 		bldr.put(Items.REDSTONE_TORCH, BitStakEntity::computeNot);
 		bldr.put(Items.TORCH, BitStakEntity::computeEquals);
-		bldr.put(Items.EGG, BitStakEntity::computeDup);
+		bldr.put(Items.COBBLESTONE, BitStakEntity::computeDup);
 		bldr.put(Items.GUNPOWDER, BitStakEntity::computePop);
-		bldr.put(Items.CLOCK, BitStakEntity::computeTick);
-
+		bldr.put(Items.REPEATER, BitStakEntity::computeTick);
+		bldr.put(Items.FEATHER, BitStakEntity::computeMark);
+		bldr.put(Items.LEVER, BitStakEntity::computeJump);
+		bldr.put(Items.COMPARATOR, BitStakEntity::computeIf0);
+		bldr.put(Items.AMETHYST_SHARD, BitStakEntity::computeSwap);
+		bldr.put(Items.BOWL, BitStakEntity::computeStore);
+		bldr.put(Items.QUARTZ, BitStakEntity::computeLoad);
+		bldr.put(Items.BUCKET, BitStakEntity::computeSwap);
+		bldr.put(Items.SUGAR, BitStakEntity::computeShiftLeft);
+		bldr.put(Items.SPIDER_EYE, BitStakEntity::computeShiftRight);
+		bldr.put(Items.ICE, entity -> true);
 		VALID_INSNS = bldr.build();
 	}
 	public static Block BLOCK;
@@ -108,13 +145,23 @@ public class BitStak extends Block implements BlockEntityProvider{
 	@Override
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
 		boolean pow = world.isReceivingRedstonePower(pos);
-		if (pow != state.get(POWERED)) {
+		if (!state.get(POWERED) && pow) {
 			world.setBlockState(pos, state.with(POWERED, pow));
+			BlockEntity entity = world.getBlockEntity(pos);
+			if (entity instanceof BitStakEntity) ((BitStakEntity)entity).resetMem();
 		}
 	}
 	@Override
 	public boolean hasComparatorOutput(BlockState state) {
-		return false;
+		return true;
+	}
+	@Override
+	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
+		BlockEntity e = world.getBlockEntity(pos);
+		if (e instanceof BitStakEntity){
+			return Math.min(15, Integer.bitCount(((BitStakEntity)e).redstone));
+		}
+		return 0;
 	}
 	@Override
 	public void onStateReplaced(BlockState state, World world, BlockPos pos, BlockState newState, boolean moved) {
@@ -178,6 +225,12 @@ class BitStakEntity extends BlockEntity {
 	public int stackPos = -1;
 	public int insnPos = -1;
 	public int redstone = 0;
+
+	public void resetMem() {
+		Arrays.fill(stack, 0);
+		stackPos = -1;
+		insnPos = -1;
+	}
 	public static void register() {
 		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("bit"), FabricBlockEntityTypeBuilder.create(BitStakEntity::new, BitStak.BLOCK).build(null));
 	}
@@ -189,9 +242,13 @@ class BitStakEntity extends BlockEntity {
 	}
 
 	public void serverTick(World world, BlockPos pos, BlockState state) {
+		if (!state.get(BitStak.POWERED)) return;
 		if (instructions.isEmpty()) return;
 		insnPos++;
-		if (insnPos>=instructions.size() || insnPos<0) return;
+		if (insnPos>=instructions.size() || insnPos<0) {
+			world.setBlockState(pos, state.with(BitStak.POWERED, false));
+			return;
+		}
 		Item itmInsn = instructions.get(insnPos);
 		if (itmInsn == null || itmInsn == Items.AIR){
 			criticalErr();
@@ -207,7 +264,9 @@ class BitStakEntity extends BlockEntity {
 		}
 	}
 	public void criticalErr(){
-
+		if (world != null) {
+			world.createExplosion(null, pos.getX(), pos.getY(), pos.getZ(), 2, Explosion.DestructionType.BREAK);
+		}
 	}
 
 	public void dropInv(){
@@ -231,43 +290,51 @@ class BitStakEntity extends BlockEntity {
 	}
 	public boolean computeAdd(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos] + stack[--stackPos];
+		stack[stackPos-1] += stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeSub(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos-1] - stack[stackPos--];
+		stack[stackPos-1] -= stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeGreater(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos-1] > stack[stackPos--] ? 0 : -1;
+		stack[stackPos-1] = stack[stackPos-1] > stack[stackPos] ? 0 : -1;
+		stackPos--;
 		return true;
 	}
 	public boolean computeLesser(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos-1] < stack[stackPos--] ? 0 : -1;
+		stack[stackPos-1] = stack[stackPos-1] < stack[stackPos] ? 0 : -1;
+		stackPos--;
 		return true;
 	}
 	public boolean computeDiv(){
 		if (stackPos<1) return false;
 		if (stack[stackPos] == 0) return false;
-		stack[stackPos] = stack[stackPos-1] / stack[stackPos--];
+		stack[stackPos-1] = stack[stackPos-1] / stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeMul(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos] * stack[--stackPos];
+		stack[stackPos-1] *= stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeAnd(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos] & stack[--stackPos];
+		stack[stackPos-1] &= stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeXor(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos] ^ stack[--stackPos];
+		stack[stackPos-1] ^= stack[stackPos];
+		stackPos--;
 		return true;
 	}
 	public boolean computeNot(){
@@ -277,13 +344,15 @@ class BitStakEntity extends BlockEntity {
 	}
 	public boolean computeEquals(){
 		if (stackPos<1) return false;
-		stack[stackPos] = stack[stackPos] ^ stack[--stackPos];
+		stack[stackPos-1] = stack[stackPos] == stack[stackPos] ? 0 : 1;
+		stackPos--;
 		return true;
 	}
 	public boolean computeDup(){
 		if (stackPos<0) return false;
 		if (stackPos>=stack.length) return false;
-		stack[++stackPos] = stack[stackPos];
+		stack[stackPos+1] = stack[stackPos];
+		stackPos++;
 		return true;
 	}
 	public boolean computePop(){
@@ -297,8 +366,8 @@ class BitStakEntity extends BlockEntity {
 			stack[stackPos--] = 0;
 		} else {
 			stack[stackPos]--;
+			insnPos--;
 		}
-		insnPos--;
 		return true;
 	}
 	public boolean computeIf0(){
@@ -310,7 +379,8 @@ class BitStakEntity extends BlockEntity {
 	public boolean computeSwap(){
 		if (stackPos<1) return false;
 		int tmp = stack[stackPos];
-		stack[stackPos] = stack[stackPos--];
+		stack[stackPos] = stack[stackPos-1];
+		stackPos--;
 		stack[stackPos] = tmp;
 		return true;
 	}
@@ -326,7 +396,35 @@ class BitStakEntity extends BlockEntity {
 		stack[stackPos--] = 0;
 		return true;
 	}
-	public boolean createFunc()
+	public boolean computeMark() {
+		if (insnPos+1>=instructions.size()) return false;
+		if (++stackPos>=stack.length) return false;
+		stack[stackPos] = insnPos;
+		return true;
+	}
+	public boolean computeJump(){
+		if (stackPos<0) return false;
+		insnPos = stack[stackPos];
+		stack[stackPos--] = 0;
+		return insnPos >= -1;
+	}
+	public boolean computeConst(int con){
+		if (++stackPos>=stack.length) return false;
+		stack[stackPos] = con;
+		return true;
+	}
+	public boolean computeStore(){
+		if (stackPos<0) return false;
+		int old = redstone;
+		redstone = stack[stackPos] & 0xffff;
+		if (old != redstone) markDirty();
+		stack[stackPos--] = 0;
+		return true;
+	}
+	public boolean computeLoad(){
+		//TODO
+		return false;
+	}
 	@Override
 	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);
