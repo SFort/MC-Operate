@@ -15,6 +15,7 @@ public class Main implements ModInitializer {
 		ObsidianDispenser.register();
 		Spoon.register();
 		BitStak.register();
+		ColorTube.register();
 		//BP.register();
 	}
 	public static Identifier id(String name){

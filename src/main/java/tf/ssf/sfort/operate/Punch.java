@@ -95,11 +95,11 @@ public class Punch extends Block implements BlockEntityProvider{
 	@Override
 	public ActionResult onUse(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockHitResult blockHitResult) {
 		if (!world.isClient) {
-			PunchEntity e = (PunchEntity) world.getBlockEntity(blockPos);
-			if(e!=null) {
+			BlockEntity e = world.getBlockEntity(blockPos);
+			if(e instanceof PunchEntity) {
 				ItemStack stack = player.getStackInHand(hand);
-				if (stack.isEmpty()) e.popInv();
-				else e.pushInv(stack.split(1));
+				if (stack.isEmpty()) ((PunchEntity)e).popInv();
+				else ((PunchEntity)e).pushInv(stack.split(1));
 				e.markDirty();
 				return ActionResult.SUCCESS;
 			}

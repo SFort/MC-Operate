@@ -14,6 +14,7 @@ import java.util.List;
 public class Config {
 	public static Logger LOGGER = LogManager.getLogger();
 	public static Boolean bit = true;
+	public static Boolean colorTube = true;
 	public static Boolean jolt = true;
 	public static Boolean punch = true;
 	public static Boolean gunpowder = true;
@@ -38,7 +39,8 @@ public class Config {
 					"^-Spoon can turn on Lamps (blocks with LIT property) [true] true | false",
 					//TODO maybe not send sync packet when disabled only on client
 					"^-Fancy Block inventory render  [on] on | off | examine",
-					"^-Crafter /Punch      [on] on | off | unregistered"
+					"^-Crafter /Punch      [on] on | off | unregistered",
+					"^-Computer /BitStak   [on] on : off : unregistered"
 					);
 			String[] ls = la.toArray(new String[Math.max(la.size(), defaultDesc.size() * 2) | 1]);
 			final int hash = Arrays.hashCode(ls);
@@ -59,6 +61,10 @@ public class Config {
 			ls[10]=fancyInv==null?"off": fancyInv?"on":"examine";
 			try{punch=ls[12].contains("unregistered")? null : !ls[12].contains("off");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#12\n" + e);}
 			ls[12]=punch==null?"unregistered": punch?"on":"off";
+			try{bit=ls[14].contains("unregistered")? null : !ls[14].contains("off");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#14\n" + e);}
+			ls[14]=bit==null?"unregistered": bit?"on":"off";
+			try{colorTube=ls[16].contains("unregistered")? null : !ls[16].contains("off");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#16\n" + e);}
+			ls[16]=colorTube==null?"unregistered": colorTube?"on":"off";
 
 			if (hash != Arrays.hashCode(ls))
 				Files.write(confFile.toPath(), Arrays.asList(ls));

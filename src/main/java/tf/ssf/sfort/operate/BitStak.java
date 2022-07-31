@@ -13,8 +13,6 @@ import net.minecraft.block.Material;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
@@ -42,7 +40,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.util.math.Vec3i;
@@ -50,6 +47,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import net.minecraft.world.explosion.Explosion;
 import org.jetbrains.annotations.Nullable;
+import tf.ssf.sfort.operate.client.BitStakScreen;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,8 +59,8 @@ import java.util.function.Predicate;
 import static tf.ssf.sfort.operate.client.McClient.mc;
 
 public class BitStak extends Block implements BlockEntityProvider{
-	public static BooleanProperty POWERED = Properties.POWERED;
-	public static DirectionProperty FACING = Properties.FACING;
+	public static final BooleanProperty POWERED = Properties.POWERED;
+	public static final DirectionProperty FACING = Properties.FACING;
 	public static ImmutableMap<Item, Predicate<BitStakEntity>> VALID_INSNS;
 	public static ImmutableMap<Item, Integer> VALID_CONST;
 	static {
@@ -143,9 +141,8 @@ public class BitStak extends Block implements BlockEntityProvider{
 	}
 	@Override
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
-		boolean pow = world.isReceivingRedstonePower(pos);
-		if (!state.get(POWERED) && pow) {
-			world.setBlockState(pos, state.with(POWERED, pow));
+		if (!state.get(POWERED) && world.isReceivingRedstonePower(pos)) {
+			world.setBlockState(pos, state.with(POWERED, true));
 			BlockEntity entity = world.getBlockEntity(pos);
 			if (entity instanceof BitStakEntity) ((BitStakEntity)entity).resetMem();
 		}
@@ -158,7 +155,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 	public int getComparatorOutput(BlockState state, World world, BlockPos pos) {
 		BlockEntity e = world.getBlockEntity(pos);
 		if (e instanceof BitStakEntity){
-			return Math.min(15, Integer.bitCount(((BitStakEntity)e).redstone));
+			return Math.min(15, ((BitStakEntity)e).redstone);
 		}
 		return 0;
 	}
@@ -174,17 +171,19 @@ public class BitStak extends Block implements BlockEntityProvider{
 	@Override
 	public ActionResult onUse(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockHitResult blockHitResult) {
 		if (!world.isClient) {
-			BitStakEntity e = (BitStakEntity) world.getBlockEntity(blockPos);
-			if(e!=null && !blockState.get(POWERED)) {
+			BlockEntity e = world.getBlockEntity(blockPos);
+			if(e instanceof BitStakEntity && !blockState.get(POWERED)) {
 				ItemStack stack = player.getStackInHand(hand);
 				if (VALID_INSNS.containsKey(stack.getItem())) {
-					e.pushInv(stack.split(1));
+					((BitStakEntity)e).pushInv(stack.split(1));
 					e.markDirty();
 					return ActionResult.SUCCESS;
 				}
 			}
+		} else if(player.getMainHandStack().isEmpty() && player.isSneaky()) {
+			mc.setScreen(new BitStakScreen());
 		}
-		return ActionResult.FAIL;
+		return ActionResult.PASS;
 	}
 	public BitStak(Settings settings) {super(settings);}
 	public static void register() {
@@ -239,7 +238,6 @@ class BitStakEntity extends BlockEntity {
 	public BitStakEntity(BlockPos blockPos, BlockState state) {
 		super(ENTITY_TYPE, blockPos, state);
 	}
-
 	public void serverTick(World world, BlockPos pos, BlockState state) {
 		if (!state.get(BitStak.POWERED)) return;
 		if (instructions.isEmpty()) return;
@@ -349,7 +347,7 @@ class BitStakEntity extends BlockEntity {
 	}
 	public boolean computeDup(){
 		if (stackPos<0) return false;
-		if (stackPos>=stack.length) return false;
+		if (stackPos+1>=stack.length) return false;
 		stack[stackPos+1] = stack[stackPos];
 		stackPos++;
 		return true;
@@ -391,12 +389,11 @@ class BitStakEntity extends BlockEntity {
 	}
 	public boolean computeShiftRight(){
 		if (stackPos<1) return false;
-		stack[stackPos-1] = stack[stackPos-1] >> stack[stackPos];
+		stack[stackPos-1] = stack[stackPos-1] >>> stack[stackPos];
 		stack[stackPos--] = 0;
 		return true;
 	}
 	public boolean computeMark() {
-		if (insnPos+1>=instructions.size()) return false;
 		if (++stackPos>=stack.length) return false;
 		stack[stackPos] = insnPos;
 		return true;
@@ -415,14 +412,16 @@ class BitStakEntity extends BlockEntity {
 	public boolean computeStore(){
 		if (stackPos<0) return false;
 		int old = redstone;
-		redstone = stack[stackPos] & 0xffff;
+		redstone = stack[stackPos] & 0xf;
 		if (old != redstone) markDirty();
 		stack[stackPos--] = 0;
 		return true;
 	}
 	public boolean computeLoad(){
-		//TODO
-		return false;
+		if (world == null) return false;
+		if (++stackPos>=stack.length) return false;
+		stack[stackPos] = world.getReceivedRedstonePower(pos);
+		return true;
 	}
 	@Override
 	public void writeNbt(NbtCompound tag) {
@@ -436,8 +435,8 @@ class BitStakEntity extends BlockEntity {
 		}
 		tag.put("stack", stak);
 		stak = new NbtCompound();
-		for (Item item : instructions) {
-			stak.putString(Integer.toString(stak.getSize()), Registry.ITEM.getId(item).toString());
+		for (int i=0; i<instructions.size(); i++) {
+			stak.putString(Integer.toString(i), Registry.ITEM.getId(instructions.get(i)).toString());
 		}
 		tag.put("insns", stak);
 	}
@@ -454,14 +453,16 @@ class BitStakEntity extends BlockEntity {
 			}
 		}
 		stak = tag.getCompound("insns");
-		for (String key : stak.getKeys()) {
-			NbtElement nbt = stak.get(key);
+		int i=0;
+		while (true) {
+			NbtElement nbt = stak.get(Integer.toString(i));
 			if (nbt instanceof NbtString) {
 				Item item = Registry.ITEM.get(new Identifier(nbt.asString()));
 				if (item != Items.AIR) {
 					instructions.add(item);
 				}
-			}
+			} else break;
+			i++;
 		}
 		insnPos = Math.max(0, Math.min(instructions.size()-1, tag.getInt("stackpos")));
 		markDirty();
@@ -469,7 +470,6 @@ class BitStakEntity extends BlockEntity {
 }
 
 class BitStakRenderer {
-	private static final int RENDER_DISTANCE = MathHelper.square(32);
 	private int step = 0;
 	public static void register(){
 		if (Config.fancyInv == null || Config.bit == null) return;
@@ -489,12 +489,8 @@ class BitStakRenderer {
 	public void render(BitStakEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		BlockState state = entity.getCachedState();
 		if (!state.get(BitStak.POWERED)) return;
-		MinecraftClient minecraftClient = MinecraftClient.getInstance();
-		ClientPlayerEntity clientPlayerEntity = minecraftClient.player;
-		if (clientPlayerEntity == null)	return;
-		if (!(minecraftClient.options.getPerspective().isFirstPerson() && clientPlayerEntity.isUsingSpyglass()))
-			if (clientPlayerEntity.squaredDistanceTo(Vec3d.ofCenter(entity.getPos())) > RENDER_DISTANCE) return;
-		Direction dir = clientPlayerEntity.getHorizontalFacing();
+		if (mc.cameraEntity == null) return;
+		Direction dir = mc.cameraEntity.getHorizontalFacing();
 		Direction face = state.get(BitStak.FACING);
 		if (face.equals(dir)) return;
 		matrix.push();
@@ -521,7 +517,6 @@ class BitStakRenderer {
 		matrix.scale(10, 10, 10);
 		matrix.pop();
 		matrix.pop();
-
 
 	}
 }

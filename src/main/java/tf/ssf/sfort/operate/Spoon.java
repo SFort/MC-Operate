@@ -58,9 +58,16 @@ public class Spoon extends Item {
 		BlockPos pos = context.getBlockPos();
 		ItemStack stack = context.getStack();
 		stack.setDamage(stack.getDamage()-1);
-
+		BlockState state = world.getBlockState(pos);
+		if (state.getBlock() instanceof Spoonable) {
+			ActionResult ret = ((Spoonable)state.getBlock()).operate$onUse(state, world, pos, context);
+			if (ret != null) {
+				world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+				stack.setDamage(getMaxDamage());
+				return ret;
+			}
+		}
 		if (stack.getDamage() == 0) {
-			BlockState state = world.getBlockState(pos);
 			BlockPos cpos = pos.offset(context.getSide().getOpposite());
 			BlockState cstate = world.getBlockState(cpos);
 			Pair<Block, Block> key = new Pair<>(state.getBlock(), cstate.getBlock());

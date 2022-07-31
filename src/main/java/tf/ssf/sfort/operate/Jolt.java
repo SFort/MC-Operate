@@ -73,10 +73,10 @@ public class Jolt extends Block implements BlockEntityProvider {
 	public ActionResult onUse(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockHitResult blockHitResult) {
 		ItemStack stack = player.getStackInHand(hand);
 		if (!world.isClient && (stack.isEmpty() || stack.getItem() instanceof BlockItem)) {
-			JoltEntity e = (JoltEntity) world.getBlockEntity(blockPos);
+			BlockEntity e = world.getBlockEntity(blockPos);
 			if(e!=null) {
 				player.setStackInHand(hand, ItemStack.EMPTY);
-				e.replaceStack(stack);
+				((JoltEntity)e).replaceStack(stack);
 				e.markDirty();
 				return ActionResult.SUCCESS;
 			}
