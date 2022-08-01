@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.EntityShapeContext;
 import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
@@ -15,6 +16,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -33,17 +35,15 @@ import net.minecraft.util.DyeColor;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 
 import java.util.Collections;
-import java.util.List;
 
 enum ConnectTypes {
 	WHITE("white", DyeColor.WHITE),
@@ -62,12 +62,19 @@ enum ConnectTypes {
 	GREEN("green", DyeColor.GREEN),
 	RED("red", DyeColor.RED),
 	BLACK("black", DyeColor.BLACK),
-	NONE("none", 0),
-	ALL("all", 0);
-	final long one;
+	NONE("none"),
+	ALL("all");
 	final long mask;
 	final DyeColor color;
 	final String name;
+	final float red;
+	final float green;
+	final float blue;
+	final float renderX;
+	final float renderZ;
+	final int compOne;
+	final long one;
+	final int shift;
 	public static final ImmutableMap<Item, ConnectTypes> itemMap;
 	public static final ImmutableMap<String, ConnectTypes> nameMap;
 	static {
@@ -95,21 +102,48 @@ enum ConnectTypes {
 		}
 		nameMap = nameBldr.build();
 	}
-	ConnectTypes(String name, long mask) {
-		this.one = 0;
-		this.mask = mask;
+	ConnectTypes(String name) {
+		this.mask = 0;
 		this.color = null;
 		this.name = name;
+		this.red = 0;
+		this.green = 0;
+		this.blue = 0;
+		this.renderX = 0;
+		this.renderZ = 0;
+		this.compOne = 0;
+		this.one = 0;
+		this.shift = 0;
 	}
 	ConnectTypes(String name, DyeColor color) {
-		one = 1L<<(ordinal()*4);
-		mask = one + one<<1 + one<<2 + one<<3;
+		this.compOne = 1<<ordinal();
+		this.shift = ordinal()*4;
+		this.one = 1L<<shift;
+		this.mask = one + (one<<1) + (one<<2) + (one<<3);
 		this.color = color;
 		this.name = name;
+		int scolor = color.getSignColor();
+		this.red = ((scolor >> 16) & 0xff) / 255f;
+		this.green = ((scolor >> 8) & 0xff) / 255f;
+		this.blue = (scolor & 0xff) / 255f;
+		this.renderZ = (float) (ordinal()/4)*.06f -.09f;
+		this.renderX = (ordinal()%4)*.06f -.09f;
+	}
+
+	public int getStrength(long colorLvl) {
+		return (int) ((colorLvl & mask) >>> shift);
 	}
 
 	public ConnectTypes next() {
 		return values()[ordinal()+1 >= ConnectTypes.values().length ? 0 : ordinal()+1];
+	}
+
+	public static int compressColor(long color) {
+		int ret = 0;
+		for (ConnectTypes con : ConnectTypes.values()) {
+			if ((color & con.mask) != 0) ret |= 1<<con.ordinal();
+		}
+		return ret;
 	}
 }
 
@@ -203,7 +237,7 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 	@Override
 	public int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
 		BlockEntity e = world.getBlockEntity(pos);
-		if (e instanceof ColorTubeEntity) return ((ColorTubeEntity)e).getWeakPower(direction);
+		if (e instanceof ColorTubeEntity) return ((ColorTubeEntity)e).getWeakPower(direction.getOpposite());
 		return 0;
 	}
 	@Override
@@ -232,7 +266,7 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 			}
 		}
 	}
-	@Override public Item asItem(){return Items.COBBLESTONE;}
+	@Override public Item asItem(){return Items.REDSTONE;}
 	@Override public BlockEntity createBlockEntity(BlockPos pos, BlockState state) { return new ColorTubeEntity(pos, state); }
 
 }
@@ -259,13 +293,14 @@ class ColorTubeEntity extends BlockEntity {
 	public void markDirty() {
 		super.markDirty();
 
-		if (this.getWorld() != null && !this.getWorld().isClient()) {
+		if (world != null && !world.isClient()) {
 			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
 		}
 	}
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {
 		NbtCompound tag = new NbtCompound();
+		tag.putLong("colorLvl", colorLvl);
 		for (int i=0; i<sides.length; i++) {
 			tag.putString(Direction.values()[i].getName(), sides[i].name);
 		}
@@ -294,18 +329,22 @@ class ColorTubeEntity extends BlockEntity {
 	public boolean wrenchSide(Direction side) {
 		sides[side.ordinal()] = sides[side.ordinal()] == ConnectTypes.NONE ? ConnectTypes.ALL : ConnectTypes.NONE;
 		markDirty();
+		if (world != null)
+			world.updateNeighbor(pos.offset(side), ColorTube.BLOCK, pos);
 		return hasRedstoneConnections();
 	}
 
 	public boolean setColor(Direction side, ConnectTypes clr) {
 		sides[side.ordinal()] = clr;
 		markDirty();
+		if (world != null)
+			world.updateNeighbor(pos.offset(side), ColorTube.BLOCK, pos);
 		return hasRedstoneConnections();
 	}
 
 	public int getWeakPower(Direction dir){
 		ConnectTypes clr = sides[dir.ordinal()];
-		if (clr.color != null) return (int) ((colorLvl & clr.mask) >>> clr.ordinal());
+		if (clr.color != null) return clr.getStrength(colorLvl);
 		return 0;
 	}
 
@@ -334,11 +373,42 @@ class ColorTubeEntity extends BlockEntity {
 		}
 		if (updated) markDirty();
 	}
+	public void subCompressedColor(int color){
+		for (ConnectTypes con : ConnectTypes.values()) {
+			if ((color&con.compOne) != 0) {
+				if ((colorLvl&con.mask) == 0) continue;
+				colorLvl -= con.one;
+			}
+		}
+		markDirty();
+		updateColorNeighbours();
+	}
+	public void addCompressedColor(int color){
+		for (ConnectTypes con : ConnectTypes.values()) {
+			if ((color&con.compOne) != 0) {
+				if ((colorLvl&con.mask) == con.mask) continue;
+				colorLvl += con.one;
+			}
+		}
+		markDirty();
+		updateColorNeighbours();
+	}
+	public void updateColorNeighbours(){
+		assert world != null;
+		for (int i=0; i<sides.length; i++) {
+			ConnectTypes con = sides[i];
+			if (con.color == null) continue;
+			world.updateNeighbor(pos.offset(Direction.values()[i]), ColorTube.BLOCK, pos);
+		}
+	}
 }
 
 class ColorTubeRenderer {
-	public static final VoxelShape sideShape =  Block.createCuboidShape(-2,4,-2,2,8,2);
-
+	public static final ShapeContext ABSENT = new EntityShapeContext(false, -1.7976931348623157E308, ItemStack.EMPTY, (fluidState) -> false, null) {
+		public boolean isAbove(VoxelShape shape, BlockPos pos, boolean defaultValue) {
+			return defaultValue;
+		}
+	};
 	public static void register(){
 		if (Config.colorTube == null) return;
 		BlockEntityRendererRegistry.register(ColorTubeEntity.ENTITY_TYPE, ctx -> new ColorTubeRenderer()::render);
@@ -350,33 +420,105 @@ class ColorTubeRenderer {
 			matrix.push();
 			matrix.translate(.5, .5, .5);
 			matrix.push();
-			matrix.multiply(Direction.values()[i].getRotationQuaternion());
+			Direction dir = Direction.values()[i];
+			matrix.multiply(dir.getRotationQuaternion());
+			switch (dir) {
+				case DOWN -> matrix.scale(1, 1, -1);
+				case WEST, NORTH -> matrix.scale(-1, 1, 1);
+			}
 			if (side == ConnectTypes.ALL) {
-				drawDirectionalLines(matrix, vertex.getBuffer(RenderLayer.LINES), sideShape, 0, 0, 0, 1, 1,1, .3f);
+				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .3f);
+				drawColorLines(matrix, vertex.getBuffer(RenderLayer.LINES), entity.colorLvl);
 			} else if (side.color != null) {
-				int color = side.color.getSignColor();
-				drawDirectionalLines(matrix, vertex.getBuffer(RenderLayer.LINES), sideShape, 0, 0, 0, ((color>>16) & 0xff)/255f, ((color>>8) & 0xff)/255f, (color & 0xff)/255f, .9f);
+				drawSideFocus(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), side.red, side.green, side.blue, .9f);
+				drawStrengthLine(matrix, vertex.getBuffer(RenderLayer.LINES), side, entity.colorLvl);
 			}
 			matrix.pop();
 			matrix.pop();
 		}
 	}
-	public static void drawDirectionalLines(MatrixStack matrices, VertexConsumer vertexConsumer, VoxelShape shape, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
-		List<Box> list = shape.getBoundingBoxes();
-		MatrixStack.Entry entry = matrices.peek();
-		for (Box box : list) {
-			VoxelShapes.cuboid(box.offset(0.0, 0.0, 0.0)).forEachEdge((minX, minY, minZ, maxX, maxY, maxZ) -> {
-				if (minY == maxY) return;
-				float k = (float)(maxX - minX);
-				float l = (float)(maxY - minY);
-				float m = (float)(maxZ - minZ);
-				float n = MathHelper.sqrt(k * k + l * l + m * m);
-				k /= n;
-				l /= n;
-				m /= n;
-				vertexConsumer.vertex(entry.getPositionMatrix(), (float)(minX + offsetX), (float)(minY + offsetY), (float)(minZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
-				vertexConsumer.vertex(entry.getPositionMatrix(), (float)(maxX + offsetX), (float)(maxY + offsetY), (float)(maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
-			});
-		}
+	public static void drawColorLines(MatrixStack matrix, VertexConsumer vertexConsumer, long clr) {
+		if (clr == 0) return;
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.WHITE, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.ORANGE, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.MAGENTA, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.LIGHT_BLUE, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.YELLOW, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.LIME, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.PINK, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.GREY, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.LIGHT_GREY, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.CYAN, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.PURPLE, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.BLUE, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.BROWN, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.GREEN, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.RED, clr);
+		drawColorLine(matrix, vertexConsumer, ConnectTypes.BLACK, clr);
 	}
+	public static void drawColorLine(MatrixStack matrix, VertexConsumer vertexConsumer, ConnectTypes connection, long clr) {
+		int strength = connection.getStrength(clr);
+		if (strength > 0)
+			drawLine(matrix.peek(), vertexConsumer, connection.renderX, .25f, connection.renderZ, connection.renderX, .5f, connection.renderZ, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+	}
+	public static void drawStrengthLine(MatrixStack matrix, VertexConsumer vertexConsumer, ConnectTypes connection, long clr) {
+		int strength = connection.getStrength(clr);
+			switch (strength) {
+				case 15:
+					drawLine(matrix.peek(), vertexConsumer, .1f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 14:
+					drawLine(matrix.peek(), vertexConsumer, .05f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 13:
+					drawLine(matrix.peek(), vertexConsumer, 0, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 12:
+					drawLine(matrix.peek(), vertexConsumer, -.05f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 11:
+					drawLine(matrix.peek(), vertexConsumer, -.1f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 10:
+					drawLine(matrix.peek(), vertexConsumer, .1f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 9:
+					drawLine(matrix.peek(), vertexConsumer, .05f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 8:
+					drawLine(matrix.peek(), vertexConsumer, 0, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 7:
+					drawLine(matrix.peek(), vertexConsumer, -.05f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 6:
+					drawLine(matrix.peek(), vertexConsumer, -.1f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 5:
+					drawLine(matrix.peek(), vertexConsumer, .1f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 4:
+					drawLine(matrix.peek(), vertexConsumer, .05f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 3:
+					drawLine(matrix.peek(), vertexConsumer, 0, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 2:
+					drawLine(matrix.peek(), vertexConsumer, -.05f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				case 1:
+					drawLine(matrix.peek(), vertexConsumer, -.1f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+
+			}
+	}
+	public static void drawSideFocus(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
+		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, .125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
+	}
+	public static void drawSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
+		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, -.125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, .125f, .125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
+	}
+	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float  maxX, float maxY, float maxZ, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
+		float k = (maxX - minX);
+		float l = (maxY - minY);
+		float m = (maxZ - minZ);
+		float n = MathHelper.sqrt(k * k + l * l + m * m);
+		k /= n;
+		l /= n;
+		m /= n;
+		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (minX + offsetX), (float) (minY + offsetY), (float) (minZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (maxX + offsetX), (float) (maxY + offsetY), (float) (maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
+	}
+
 }

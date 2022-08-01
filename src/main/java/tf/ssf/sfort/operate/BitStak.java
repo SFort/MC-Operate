@@ -52,8 +52,12 @@ import tf.ssf.sfort.operate.client.BitStakScreen;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static tf.ssf.sfort.operate.client.McClient.mc;
@@ -61,57 +65,74 @@ import static tf.ssf.sfort.operate.client.McClient.mc;
 public class BitStak extends Block implements BlockEntityProvider{
 	public static final BooleanProperty POWERED = Properties.POWERED;
 	public static final DirectionProperty FACING = Properties.FACING;
-	public static ImmutableMap<Item, Predicate<BitStakEntity>> VALID_INSNS;
-	public static ImmutableMap<Item, Integer> VALID_CONST;
+	public static final Map<Item, Predicate<BitStakEntity>> VALID_INSNS = new HashMap<>();
+	public static final Map<Item, Integer> VALID_CONST = new HashMap<>();
 	static {
-		ImmutableMap.Builder<Item, Integer> constBldr = new ImmutableMap.Builder<>();
-		constBldr.put(Items.CHARCOAL, -1);
-		constBldr.put(Items.GLASS, 0);
-		constBldr.put(Items.WHITE_DYE, 1);
-		constBldr.put(Items.ORANGE_DYE, 2);
-		constBldr.put(Items.MAGENTA_DYE, 3);
-		constBldr.put(Items.LIGHT_BLUE_DYE, 4);
-		constBldr.put(Items.YELLOW_DYE, 5);
-		constBldr.put(Items.LIME_DYE, 6);
-		constBldr.put(Items.PINK_DYE, 7);
-		constBldr.put(Items.GRAY_DYE, 8);
-		constBldr.put(Items.LIGHT_GRAY_DYE, 9);
-		constBldr.put(Items.CYAN_DYE, 10);
-		constBldr.put(Items.PURPLE_DYE, 11);
-		constBldr.put(Items.BLUE_DYE, 12);
-		constBldr.put(Items.BROWN_DYE, 13);
-		constBldr.put(Items.GREEN_DYE, 14);
-		constBldr.put(Items.RED_DYE, 15);
-		constBldr.put(Items.BLACK_DYE, 16);
-		VALID_CONST = constBldr.build();
-		ImmutableMap.Builder<Item, Predicate<BitStakEntity>> bldr = new ImmutableMap.Builder<>();
+		VALID_CONST.put(Items.CHARCOAL, -1);
+		VALID_CONST.put(Items.GLASS, 0);
+		VALID_CONST.put(Items.WHITE_DYE, 1);
+		VALID_CONST.put(Items.ORANGE_DYE, 2);
+		VALID_CONST.put(Items.MAGENTA_DYE, 3);
+		VALID_CONST.put(Items.LIGHT_BLUE_DYE, 4);
+		VALID_CONST.put(Items.YELLOW_DYE, 5);
+		VALID_CONST.put(Items.LIME_DYE, 6);
+		VALID_CONST.put(Items.PINK_DYE, 7);
+		VALID_CONST.put(Items.GRAY_DYE, 8);
+		VALID_CONST.put(Items.LIGHT_GRAY_DYE, 9);
+		VALID_CONST.put(Items.CYAN_DYE, 10);
+		VALID_CONST.put(Items.PURPLE_DYE, 11);
+		VALID_CONST.put(Items.BLUE_DYE, 12);
+		VALID_CONST.put(Items.BROWN_DYE, 13);
+		VALID_CONST.put(Items.GREEN_DYE, 14);
+		VALID_CONST.put(Items.RED_DYE, 15);
+		VALID_CONST.put(Items.BLACK_DYE, 16);
+		VALID_CONST.put(Items.WHITE_WOOL, 1);
+		VALID_CONST.put(Items.ORANGE_WOOL, 2);
+		VALID_CONST.put(Items.MAGENTA_WOOL, 4);
+		VALID_CONST.put(Items.LIGHT_BLUE_WOOL, 8);
+		VALID_CONST.put(Items.YELLOW_WOOL, 16);
+		VALID_CONST.put(Items.LIME_WOOL, 32);
+		VALID_CONST.put(Items.PINK_WOOL, 64);
+		VALID_CONST.put(Items.GRAY_WOOL, 128);
+		VALID_CONST.put(Items.LIGHT_GRAY_WOOL, 256);
+		VALID_CONST.put(Items.CYAN_WOOL, 512);
+		VALID_CONST.put(Items.PURPLE_WOOL, 1024);
+		VALID_CONST.put(Items.BLUE_WOOL, 2048);
+		VALID_CONST.put(Items.BROWN_WOOL, 4096);
+		VALID_CONST.put(Items.GREEN_WOOL, 8192);
+		VALID_CONST.put(Items.RED_WOOL, 16384);
+		VALID_CONST.put(Items.BLACK_WOOL, 32768);
+
 		for (Map.Entry<Item, Integer> entry : VALID_CONST.entrySet()) {
 			int color = entry.getValue();
-			bldr.put(entry.getKey(), e -> e.computeConst(color));
+			VALID_INSNS.put(entry.getKey(), e -> e.computeConst(color));
 		}
-		bldr.put(Items.REDSTONE, BitStakEntity::computeAdd);
-		bldr.put(Items.STICK, BitStakEntity::computeSub);
-		bldr.put(Items.IRON_INGOT, BitStakEntity::computeGreater);
-		bldr.put(Items.COPPER_INGOT, BitStakEntity::computeLesser);
-		bldr.put(Items.LAPIS_LAZULI, BitStakEntity::computeDiv);
-		bldr.put(Items.BONE, BitStakEntity::computeMul);
-		bldr.put(Items.GLASS_BOTTLE, BitStakEntity::computeAnd);
-		bldr.put(Items.FURNACE, BitStakEntity::computeXor);
-		bldr.put(Items.REDSTONE_TORCH, BitStakEntity::computeNot);
-		bldr.put(Items.TORCH, BitStakEntity::computeEquals);
-		bldr.put(Items.COBBLESTONE, BitStakEntity::computeDup);
-		bldr.put(Items.GUNPOWDER, BitStakEntity::computePop);
-		bldr.put(Items.REPEATER, BitStakEntity::computeTick);
-		bldr.put(Items.FEATHER, BitStakEntity::computeMark);
-		bldr.put(Items.LEVER, BitStakEntity::computeJump);
-		bldr.put(Items.COMPARATOR, BitStakEntity::computeIf0);
-		bldr.put(Items.AMETHYST_SHARD, BitStakEntity::computeSwap);
-		bldr.put(Items.BOWL, BitStakEntity::computeStore);
-		bldr.put(Items.QUARTZ, BitStakEntity::computeLoad);
-		bldr.put(Items.SUGAR, BitStakEntity::computeShiftLeft);
-		bldr.put(Items.SPIDER_EYE, BitStakEntity::computeShiftRight);
-		bldr.put(Items.ICE, entity -> true);
-		VALID_INSNS = bldr.build();
+		VALID_INSNS.put(Items.REDSTONE, BitStakEntity::computeAdd);
+		VALID_INSNS.put(Items.STICK, BitStakEntity::computeSub);
+		VALID_INSNS.put(Items.IRON_INGOT, BitStakEntity::computeGreater);
+		VALID_INSNS.put(Items.COPPER_INGOT, BitStakEntity::computeLesser);
+		VALID_INSNS.put(Items.LAPIS_LAZULI, BitStakEntity::computeDiv);
+		VALID_INSNS.put(Items.BONE, BitStakEntity::computeMul);
+		VALID_INSNS.put(Items.GLASS_BOTTLE, BitStakEntity::computeAnd);
+		VALID_INSNS.put(Items.FURNACE, BitStakEntity::computeXor);
+		VALID_INSNS.put(Items.REDSTONE_TORCH, BitStakEntity::computeNot);
+		VALID_INSNS.put(Items.TORCH, BitStakEntity::computeEquals);
+		VALID_INSNS.put(Items.COBBLESTONE, BitStakEntity::computeDup);
+		VALID_INSNS.put(Items.GUNPOWDER, BitStakEntity::computePop);
+		VALID_INSNS.put(Items.REPEATER, BitStakEntity::computeTick);
+		VALID_INSNS.put(Items.FEATHER, BitStakEntity::computeMark);
+		VALID_INSNS.put(Items.LEVER, BitStakEntity::computeJump);
+		VALID_INSNS.put(Items.COMPARATOR, BitStakEntity::computeIf0);
+		VALID_INSNS.put(Items.AMETHYST_SHARD, BitStakEntity::computeSwap);
+		VALID_INSNS.put(Items.BOWL, BitStakEntity::computeStore);
+		VALID_INSNS.put(Items.QUARTZ, BitStakEntity::computeLoad);
+		VALID_INSNS.put(Items.SUGAR, BitStakEntity::computeShiftLeft);
+		VALID_INSNS.put(Items.SPIDER_EYE, BitStakEntity::computeShiftRight);
+		VALID_INSNS.put(Items.BLAZE_POWDER, BitStakEntity::computeColorLoad);
+		VALID_INSNS.put(Items.BRICK, BitStakEntity::computeColorAdd);
+		VALID_INSNS.put(Items.FLINT, BitStakEntity::computeColorSubtract);
+		VALID_INSNS.put(Items.PAPER, BitStakEntity::computeGetColorStrength);
+		VALID_INSNS.put(Items.ICE, entity -> true);
 	}
 	public static Block BLOCK;
 	public BitStak() {
@@ -183,7 +204,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 		} else if(player.getMainHandStack().isEmpty() && player.isSneaky()) {
 			mc.setScreen(new BitStakScreen());
 		}
-		return ActionResult.PASS;
+		return ActionResult.CONSUME;
 	}
 	public BitStak(Settings settings) {super(settings);}
 	public static void register() {
@@ -404,6 +425,24 @@ class BitStakEntity extends BlockEntity {
 		stack[stackPos--] = 0;
 		return insnPos >= -1;
 	}
+	public boolean computeGetColorStrength(){
+		if (world == null) return false;
+		if (stackPos<0) return false;
+		int clr = stack[stackPos];
+		if (clr < 1 || clr > 16) return false;
+		clr--;
+		BlockPos.Mutable mutable = pos.mutableCopy();
+		long color = 0;
+		for (Direction dir : Direction.values()) {
+			BlockEntity entity = world.getBlockEntity(mutable.set(pos).move(dir));
+			if (entity instanceof  ColorTubeEntity) {
+				color |= ((ColorTubeEntity) entity).colorLvl;
+			}
+		}
+		ConnectTypes con = ConnectTypes.values()[clr];
+		stack[stackPos] = (int) ((color&con.mask) >>> con.shift);
+		return true;
+	}
 	public boolean computeConst(int con){
 		if (++stackPos>=stack.length) return false;
 		stack[stackPos] = con;
@@ -423,6 +462,71 @@ class BitStakEntity extends BlockEntity {
 		stack[stackPos] = world.getReceivedRedstonePower(pos);
 		return true;
 	}
+	public boolean computeColorLoad(){
+		if (world == null) return false;
+		if (++stackPos>=stack.length) return false;
+		BlockPos.Mutable mutable = pos.mutableCopy();
+		long color = 0;
+		for (Direction dir : Direction.values()) {
+			BlockEntity entity = world.getBlockEntity(mutable.set(pos).move(dir));
+			if (entity instanceof  ColorTubeEntity && ((ColorTubeEntity) entity).sides[dir.getOpposite().ordinal()] == ConnectTypes.ALL) {
+				color |= ((ColorTubeEntity) entity).colorLvl;
+			}
+		}
+		stack[stackPos] = ConnectTypes.compressColor(color);
+		return true;
+	}
+	public boolean computeColorAdd(){
+		if (world == null) return false;
+		if (stackPos<0) return false;
+		int clr = stack[stackPos] & 0xffff;
+		applyToAllConnectedColorTubes(e -> e.addCompressedColor(clr));
+		stack[stackPos--] = 0;
+		return true;
+	}
+	public boolean computeColorSubtract(){
+		if (world == null) return false;
+		if (stackPos<0) return false;
+		int clr = stack[stackPos] & 0xffff;
+		applyToAllConnectedColorTubes(e -> e.subCompressedColor(clr));
+		stack[stackPos--] = 0;
+		return true;
+	}
+	public void applyToAllConnectedColorTubes(Consumer<ColorTubeEntity> process){
+		assert world != null;
+		Set<ColorTubeEntity> entities = new HashSet<>();
+		List<ColorTubeEntity> reader = new ArrayList<>();
+		List<ColorTubeEntity> writer = new ArrayList<>();
+		BlockPos.Mutable mut = pos.mutableCopy();
+		for (Direction dir : Direction.values()) {
+			BlockEntity e = world.getBlockEntity(mut.set(pos).move(dir));
+			if (e instanceof ColorTubeEntity && ((ColorTubeEntity) e).sides[dir.getOpposite().ordinal()] == ConnectTypes.ALL) {
+				reader.add((ColorTubeEntity) e);
+				entities.add((ColorTubeEntity) e);
+			}
+		}
+		do{
+			for (ColorTubeEntity e : reader) {
+				for (int i=0, size=e.sides.length; i<size; i++) {
+					ConnectTypes side = e.sides[i];
+					if (side != ConnectTypes.ALL) continue;
+					Direction dir = Direction.values()[i];
+					BlockEntity neighbour = world.getBlockEntity(mut.set(e.getPos()).move(dir));
+					if (neighbour instanceof ColorTubeEntity && ((ColorTubeEntity) neighbour).sides[dir.getOpposite().ordinal()] == ConnectTypes.ALL) {
+						if (entities.add((ColorTubeEntity) neighbour)) {
+							writer.add((ColorTubeEntity) neighbour);
+						}
+					}
+				}
+			}
+			reader.clear();
+			List<ColorTubeEntity> swp = reader;
+			reader = writer;
+			writer = swp;
+		}while (!reader.isEmpty());
+		for (ColorTubeEntity e : entities) process.accept(e);
+	}
+
 	@Override
 	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);

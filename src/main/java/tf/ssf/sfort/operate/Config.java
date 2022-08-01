@@ -40,7 +40,8 @@ public class Config {
 					//TODO maybe not send sync packet when disabled only on client
 					"^-Fancy Block inventory render  [on] on | off | examine",
 					"^-Crafter /Punch      [on] on | off | unregistered",
-					"^-Computer /BitStak   [on] on : off : unregistered"
+					"^-Computer /BitStak   [on] on | off | unregistered",
+					"^-Color cable         [on] on | off | unregistered"
 					);
 			String[] ls = la.toArray(new String[Math.max(la.size(), defaultDesc.size() * 2) | 1]);
 			final int hash = Arrays.hashCode(ls);

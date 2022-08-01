@@ -195,7 +195,7 @@ class JoltEntity extends BlockEntity implements Inventory {
 	public void markDirty() {
 		super.markDirty();
 
-		if (this.getWorld() != null && !this.getWorld().isClient()) {
+		if (world != null && !world.isClient()) {
 			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
 		}
 	}
