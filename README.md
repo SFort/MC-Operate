@@ -5,6 +5,8 @@ Client and Server side
 ![](img/3.gif)
 ![](img/4.gif)
 ![](img/5.gif)
+![](img/6.gif)
+
 #### Features:
 - Dispensers can use gunpowder
 - Adds Obsidian Dispenser (can use more gunpowder)
