@@ -427,10 +427,10 @@ class ColorTubeRenderer {
 				case WEST, NORTH -> matrix.scale(-1, 1, 1);
 			}
 			if (side == ConnectTypes.ALL) {
-				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .3f);
+				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
 				drawColorLines(matrix, vertex.getBuffer(RenderLayer.LINES), entity.colorLvl);
 			} else if (side.color != null) {
-				drawSideFocus(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), side.red, side.green, side.blue, .9f);
+				drawSideFocus(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), side.red, side.green, side.blue, 1);
 				drawStrengthLine(matrix, vertex.getBuffer(RenderLayer.LINES), side, entity.colorLvl);
 			}
 			matrix.pop();

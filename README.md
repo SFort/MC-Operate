@@ -14,5 +14,6 @@ Client and Server side
   can turn on lamps (or other blocks that can be lit)
 - Adds Auto Crafter
 - Computer
+- Color Cables
 - ...in future, if i'm not lazy
 
