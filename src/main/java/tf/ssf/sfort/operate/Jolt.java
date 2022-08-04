@@ -88,7 +88,7 @@ public class Jolt extends Block implements BlockEntityProvider {
 		if (Config.jolt != null) {
 			BLOCK = Registry.register(Registry.BLOCK, Main.id("jolt"), new Jolt());
 			JoltEntity.register();
-			if (Config.jolt && Config.obsDispenser != null)
+			if (Config.jolt)
 				Spoon.CRAFT.put(new Pair<>(Blocks.SOUL_SAND, Blocks.OBSIDIAN), (world, pos, cpos, state, cstate) -> {
 					world.removeBlock(pos, false);
 					if (world instanceof ServerWorld) {
