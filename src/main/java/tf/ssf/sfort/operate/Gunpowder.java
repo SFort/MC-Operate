@@ -44,8 +44,8 @@ public class Gunpowder extends HorizontalConnectingBlock {
 					PlayerEntity p = context.getPlayer();
 					BlockPos gpos = context.getBlockPos().offset(context.getSide());
 					if (p != null && world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), context.getSide()) && world.getBlockState(gpos).isAir()) {
-						world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
 						p.getOffHandStack().decrement(1);
+						world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
 						return true;
 					}
 					return false;
