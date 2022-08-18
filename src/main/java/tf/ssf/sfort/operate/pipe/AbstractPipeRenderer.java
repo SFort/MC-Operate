@@ -1,13 +1,21 @@
 package tf.ssf.sfort.operate.pipe;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.item.ItemRenderer;
+import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Quaternion;
+import net.minecraft.util.math.Vec3f;
+import net.minecraft.world.World;
 
 public class AbstractPipeRenderer {
+
+	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
 
 	public void render(AbstractPipeEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		for (Direction dir : Direction.values()) {
@@ -22,6 +30,45 @@ public class AbstractPipeRenderer {
 			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
 				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
 			}
+			matrix.pop();
+			matrix.pop();
+		}
+		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
+		World world = entity.getWorld();
+		if (world == null) return;
+		for (AbstractPipeEntity.TransportedStack entry : entity.itemQueue) {
+			matrix.push();
+			long diff = Math.min(entity.getPipeTransferTime(), entry.travelTime - world.getTime());
+			double progress = 0;
+			if (diff > 0) {
+				float divDiff = diff / (float)entity.getPipeTransferTime();
+				progress = MathHelper.lerp(tickDelta, divDiff + .1f, divDiff);
+			}
+			switch (entry.origin) {
+				case UP:
+					matrix.translate(.5, .5 + progress, .4);
+					break;
+				case DOWN:
+					matrix.translate(.5, .5 - progress, .6);
+					break;
+				case NORTH:
+					matrix.translate(.4, .5, .5 - progress);
+					matrix.multiply(X_ROTATION);
+					break;
+				case SOUTH:
+					matrix.translate(.6, .5, .5 + progress);
+					matrix.multiply(X_ROTATION);
+					break;
+				case WEST:
+					matrix.translate(.5 - progress, .5, .4);
+					break;
+				case EAST:
+					matrix.translate(.5 + progress, .5, .6);
+					break;
+			}
+			matrix.push();
+			matrix.scale(.5f, .5f, .5f);
+			ir.renderItem(null, entry.stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 			matrix.pop();
 		}

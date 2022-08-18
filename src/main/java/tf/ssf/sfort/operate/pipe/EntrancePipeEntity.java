@@ -7,7 +7,6 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
@@ -27,9 +26,19 @@ public class EntrancePipeEntity extends AbstractPipeEntity implements SidedInven
     }
 
     @Override
-    public boolean acceptItemFrom(ItemStack stack, Direction dir) {
-        pushNewItem(stack, dir);
+    public boolean acceptItemFrom(TransportedStack stack, Direction dir) {
+        if (world == null) return false;
+        stack.travelTime = world.getLevelProperties().getTime() + getPipeTransferTime();
+        stack.origin = dir;
+        itemQueue.offer(stack);
+        world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
+        markDirty();
         return true;
+    }
+
+    @Override
+    public int getPipeTransferTime() {
+        return 10;
     }
 
     @Override
@@ -38,10 +47,6 @@ public class EntrancePipeEntity extends AbstractPipeEntity implements SidedInven
     }
 
     public void pushNewItem(ItemStack stack, Direction dir) {
-        if (world == null) return;
-        long travelTime = world.getLevelProperties().getTime() + 10;
-        itemQueue.offer(new TransportedStack(stack, dir, travelTime));
-        world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, travelTime, world.getTickOrder()));
     }
 
     @Override

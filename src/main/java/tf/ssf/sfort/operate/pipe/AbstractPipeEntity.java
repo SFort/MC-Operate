@@ -15,11 +15,11 @@ import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.tick.OrderedTick;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.function.IntFunction;
@@ -34,10 +34,24 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			this.origin = origin;
 			this.travelTime = travelTime;
 		}
+		public TransportedStack(NbtCompound tag){
+			this.stack = ItemStack.fromNbt(tag.getCompound("stack"));
+			this.origin = Direction.values()[Math.min(5, Math.max(0, tag.getInt("origin")))];
+			this.travelTime = tag.getLong("ttime");
+		}
+		public void writeTag(NbtCompound tag){
+			tag.put("stack", this.stack.writeNbt(new NbtCompound()));
+			tag.putInt("origin", this.origin.ordinal());
+			tag.putLong("ttime", this.travelTime);
+		}
+		public NbtCompound toTag(NbtCompound tag){
+			writeTag(tag);
+			return tag;
+		}
 	}
 	public byte connectedSides = 0;
 
-	public final Deque<TransportedStack> itemQueue = new LinkedList<>();
+	public final LinkedList<TransportedStack> itemQueue = new LinkedList<>();
 
 	public AbstractPipeEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -64,6 +78,12 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	public NbtCompound toInitialChunkDataNbt() {
 		NbtCompound tag = new NbtCompound();
 		tag.putByte("sides", connectedSides);
+		NbtCompound items = new NbtCompound();
+		int i=0;
+		for (TransportedStack stack : itemQueue) {
+			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+		}
+		tag.put("items", items);
 		return tag;
 	}
 
@@ -71,12 +91,26 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	public void writeNbt(NbtCompound tag) {
 		super.writeNbt(tag);
 		tag.putByte("sides", connectedSides);
+		NbtCompound items = new NbtCompound();
+		int i=0;
+		for (TransportedStack stack : itemQueue) {
+			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+		}
+		tag.put("items", items);
 	}
 
 	@Override
 	public void readNbt(NbtCompound tag) {
 		super.readNbt(tag);
 		connectedSides = tag.getByte("sides");
+		itemQueue.clear();
+		NbtCompound items = tag.getCompound("items");
+		int i=0;
+		while (true) {
+			NbtCompound item = items.getCompound(Integer.toString(i++));
+			if (item.isEmpty()) break;
+			itemQueue.offer(new TransportedStack(item));
+		}
 		markDirty();
 	}
 
@@ -86,7 +120,6 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	}
 
 	public void pipeTick() {
-		//TODO when dropping items do it opposite from origin
 		if (world == null) return;
 		if (itemQueue.isEmpty()) return;
 
@@ -102,14 +135,16 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				if (entry.origin != dir && (connectedSides & (1 << dir.ordinal())) != 0) {
 					BlockPos offset = pos.offset(dir);
 					if (world.isAir(offset)){
-						//TODO offset in correct direction
-						world.spawnEntity(new ItemEntity(world, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, entry.stack));
+						Vec3i dropDir = dir.getVector();
+						ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
+						itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
+						world.spawnEntity(itemEntity);
 						break;
 					}
 					BlockEntity e = world.getBlockEntity(offset);
-					ItemStack stack = entry.stack;
-					if (e instanceof ItemPipeAcceptor && ((ItemPipeAcceptor) e).acceptItemFrom(stack, dir.getOpposite()))
+					if (e instanceof ItemPipeAcceptor && ((ItemPipeAcceptor) e).acceptItemFrom(entry, dir.getOpposite())) {
 						break;
+					}
 					if (e instanceof Inventory) {
 						int maxInvPerSlot = ((Inventory) e).getMaxCountPerStack();
 						IntFunction<Integer> ordinalToSlot = i -> i;
@@ -121,6 +156,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 								ordinalToSlot = i -> availableSlots[i];
 							}
 						}
+						ItemStack stack = entry.stack;
 						for (int in = 0, i = ordinalToSlot.apply(in); in < loopSize; i = ordinalToSlot.apply(++in)) {
 							if (!((Inventory) e).isValid(i, stack)) continue;
 							if (e instanceof SidedInventory && !((SidedInventory) e).canInsert(i, stack, dir.getOpposite()))
@@ -144,12 +180,16 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 					}
 				}
 				if (++di >= dSize) {
-					world.spawnEntity(new ItemEntity(world, pos.getX() + .5, pos.getY() + 1, pos.getZ() + .5, entry.stack));
+					Vec3i dropDir = entry.origin.getOpposite().getVector();
+					ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
+					itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
+					world.spawnEntity(itemEntity);
 					break;
 				}
 
 			}
 			itemQueue.poll();
+			markDirty();
 			if (itemQueue.isEmpty()) {
 				entry = null;
 				break;
@@ -189,7 +229,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	// if ((connectedSides & (1<<dir.ordinal())) == 0) return false;
 	@Override
-	abstract public boolean acceptItemFrom(ItemStack stack, Direction dir);
+	abstract public boolean acceptItemFrom(TransportedStack stack, Direction dir);
+	abstract public int getPipeTransferTime();
 	abstract public Block asBlock();
 
 }

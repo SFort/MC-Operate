@@ -29,6 +29,18 @@
     "facing=west,powered=true": {
       "model": "operate:block/bit_on",
       "y": 270
+    },
+    "facing=down,powered=true": {
+      "model": "operate:block/bit"
+    },
+    "facing=down,powered=false": {
+      "model": "operate:block/bit"
+    },
+    "facing=up,powered=true": {
+      "model": "operate:block/bit"
+    },
+    "facing=up,powered=false": {
+      "model": "operate:block/bit"
     }
   }
 }

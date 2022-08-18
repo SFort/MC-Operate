@@ -30,33 +30,34 @@ public class EntrancePipe extends AbstractPipe{
 	public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
 		BlockEntity be = world.getBlockEntity(pos);
 		if (be instanceof EntrancePipeEntity) {
-			if (entity instanceof ItemEntity) {
+			if (entity instanceof ItemEntity && entity.isAlive()) {
 				ItemStack stack = ((ItemEntity) entity).getStack();
-				if (entity.isAlive()) {
-					entity.kill();
 					Direction dir;
 					Vec3d epos = entity.getPos();
 					double x = pos.getX() - epos.x;
 					double y = pos.getY() - epos.y;
 					double z = pos.getZ() - epos.z;
-					if (x>y){
-						if (x>z){
-							if (x<0) dir = Direction.WEST;
-							else dir = Direction.EAST;
+					double ax = Math.abs(x);
+					double ay = Math.abs(y);
+					double az = Math.abs(z);
+					if (ax>ay){
+						if (ax>az){
+							if (x<0) dir = Direction.EAST;
+							else dir = Direction.WEST;
 						} else {
-							if (z>0) dir = Direction.SOUTH;
-							else dir = Direction.NORTH;
+							if (z>0) dir = Direction.NORTH;
+							else dir = Direction.SOUTH;
 						}
-					} else if (z>y) {
-						if (z>0) dir = Direction.SOUTH;
-						else dir = Direction.NORTH;
+					} else if (az>ay) {
+						if (z>0) dir = Direction.NORTH;
+						else dir = Direction.SOUTH;
 					} else if (y<0) {
-						dir = Direction.DOWN;
-					} else {
 						dir = Direction.UP;
+					} else {
+						dir = Direction.DOWN;
 					}
-					((EntrancePipeEntity) be).pushNewItem(stack, dir);
-				}
+					if (((EntrancePipeEntity) be).acceptItemFrom(stack, dir)) entity.kill();
+					else entity.addVelocity(world.random.nextDouble()-.5, dir == Direction.UP ? .5 : 0, world.random.nextDouble()-.5);
 			}
 		}
 	}
