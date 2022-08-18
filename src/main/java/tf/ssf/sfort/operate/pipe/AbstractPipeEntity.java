@@ -25,30 +25,6 @@ import java.util.List;
 import java.util.function.IntFunction;
 
 public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor {
-	public static class TransportedStack {
-		public final ItemStack stack;
-		public Direction origin;
-		public long travelTime;
-		public TransportedStack(ItemStack stack, Direction origin, long travelTime) {
-			this.stack = stack;
-			this.origin = origin;
-			this.travelTime = travelTime;
-		}
-		public TransportedStack(NbtCompound tag){
-			this.stack = ItemStack.fromNbt(tag.getCompound("stack"));
-			this.origin = Direction.values()[Math.min(5, Math.max(0, tag.getInt("origin")))];
-			this.travelTime = tag.getLong("ttime");
-		}
-		public void writeTag(NbtCompound tag){
-			tag.put("stack", this.stack.writeNbt(new NbtCompound()));
-			tag.putInt("origin", this.origin.ordinal());
-			tag.putLong("ttime", this.travelTime);
-		}
-		public NbtCompound toTag(NbtCompound tag){
-			writeTag(tag);
-			return tag;
-		}
-	}
 	public byte connectedSides = 0;
 
 	public final LinkedList<TransportedStack> itemQueue = new LinkedList<>();
@@ -229,7 +205,15 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	// if ((connectedSides & (1<<dir.ordinal())) == 0) return false;
 	@Override
-	abstract public boolean acceptItemFrom(TransportedStack stack, Direction dir);
+	public boolean acceptItemFrom(TransportedStack stack, Direction dir) {
+		if (world == null) return false;
+		stack.travelTime = world.getLevelProperties().getTime() + getPipeTransferTime();
+		stack.origin = dir;
+		itemQueue.offer(stack);
+		world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
+		markDirty();
+		return true;
+	}
 	abstract public int getPipeTransferTime();
 	abstract public Block asBlock();
 

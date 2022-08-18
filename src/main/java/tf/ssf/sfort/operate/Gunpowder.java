@@ -39,17 +39,15 @@ public class Gunpowder extends HorizontalConnectingBlock {
 		if (Config.gunpowder != null) {
 			BLOCK = Registry.register(Registry.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));
 			if (Config.gunpowder) {
-				Spoon.PLACE.put(Items.GUNPOWDER, (context -> {
-					World world = context.getWorld();
-					PlayerEntity p = context.getPlayer();
-					BlockPos gpos = context.getBlockPos().offset(context.getSide());
-					if (p != null && world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), context.getSide()) && world.getBlockState(gpos).isAir()) {
-						p.getOffHandStack().decrement(1);
+				Spoon.PLACE.put(Items.GUNPOWDER, (world, pos, state, offhand, side) -> {
+					BlockPos gpos = pos.offset(side);
+					if (world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), side) && world.getBlockState(gpos).isAir()) {
+						offhand.decrement(1);
 						world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
-						return true;
+						return ActionResult.SUCCESS;
 					}
-					return false;
-				}));
+					return null;
+				});
 			}
 		}
 	}

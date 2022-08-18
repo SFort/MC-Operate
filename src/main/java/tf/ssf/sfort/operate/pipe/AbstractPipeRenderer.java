@@ -36,7 +36,7 @@ public class AbstractPipeRenderer {
 		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
 		World world = entity.getWorld();
 		if (world == null) return;
-		for (AbstractPipeEntity.TransportedStack entry : entity.itemQueue) {
+		for (TransportedStack entry : entity.itemQueue) {
 			matrix.push();
 			long diff = Math.min(entity.getPipeTransferTime(), entry.travelTime - world.getTime());
 			double progress = 0;
@@ -46,24 +46,24 @@ public class AbstractPipeRenderer {
 			}
 			switch (entry.origin) {
 				case UP:
-					matrix.translate(.5, .5 + progress, .4);
+					matrix.translate(.5, .5 + progress, .37);
 					break;
 				case DOWN:
-					matrix.translate(.5, .5 - progress, .6);
+					matrix.translate(.5, .5 - progress, .63);
 					break;
 				case NORTH:
-					matrix.translate(.4, .5, .5 - progress);
+					matrix.translate(.37, .45, .5 - progress);
 					matrix.multiply(X_ROTATION);
 					break;
 				case SOUTH:
-					matrix.translate(.6, .5, .5 + progress);
+					matrix.translate(.63, .45, .5 + progress);
 					matrix.multiply(X_ROTATION);
 					break;
 				case WEST:
-					matrix.translate(.5 - progress, .5, .4);
+					matrix.translate(.5 - progress, .45, .37);
 					break;
 				case EAST:
-					matrix.translate(.5 + progress, .5, .6);
+					matrix.translate(.5 + progress, .45, .63);
 					break;
 			}
 			matrix.push();

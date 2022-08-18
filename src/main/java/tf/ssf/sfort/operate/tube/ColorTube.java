@@ -133,19 +133,17 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 			BLOCK = Registry.register(Registry.BLOCK, Main.id("color_tube"), new ColorTube());
 			ColorTubeEntity.register();
 			if (Config.colorTube) {
-				Spoon.PLACE.put(Items.REDSTONE, (context -> {
-					World world = context.getWorld();
-					PlayerEntity p = context.getPlayer();
-					BlockPos gpos = context.getBlockPos().offset(context.getSide());
-					if (p != null && world.getBlockState(gpos).isAir()) {
-						p.getOffHandStack().decrement(1);
+				Spoon.PLACE.put(Items.REDSTONE, (world, pos, state, offhand, side) -> {
+					BlockPos gpos = pos.offset(side);
+					if (world.getBlockState(gpos).isAir()) {
+						offhand.decrement(1);
 						world.setBlockState(gpos, ColorTube.BLOCK.getDefaultState());
 						BlockEntity e = world.getBlockEntity(gpos);
 						if (e instanceof ColorTubeEntity) ((ColorTubeEntity)e).justPlaced();
-						return true;
+						return ActionResult.SUCCESS;
 					}
-					return false;
-				}));
+					return null;
+				});
 			}
 		}
 	}

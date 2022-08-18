@@ -1,14 +1,19 @@
 package tf.ssf.sfort.operate.pipe;
 
+import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.particle.BlockStateParticleEffect;
+import net.minecraft.particle.ParticleTypes;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -16,7 +21,6 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Spoon;
-import tf.ssf.sfort.operate.tube.ColorTubeEntity;
 
 public class EntrancePipe extends AbstractPipe{
 	public static Block BLOCK;
@@ -67,19 +71,14 @@ public class EntrancePipe extends AbstractPipe{
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("entrance_pipe"), new EntrancePipe());
 		EntrancePipeEntity.register();
 		if (true) {
-			Spoon.PLACE.put(Items.IRON_INGOT, (context -> {
-				World world = context.getWorld();
-				PlayerEntity p = context.getPlayer();
-				BlockPos gpos = context.getBlockPos().offset(context.getSide());
-				if (p != null && world.getBlockState(gpos).isAir()) {
-					p.getOffHandStack().decrement(1);
-					world.setBlockState(gpos, EntrancePipe.BLOCK.getDefaultState());
-					BlockEntity e = world.getBlockEntity(gpos);
-					if (e instanceof ColorTubeEntity) ((ColorTubeEntity) e).justPlaced();
-					return true;
+			Spoon.CRAFT.put(new Pair<>(Blocks.IRON_BLOCK, Blocks.STONE), (world, pos, cpos, state, cstate) -> {
+				world.removeBlock(pos, false);
+				if (world instanceof ServerWorld) {
+					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
+					world.playSound(null, pos, Spoon.BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 				}
-				return false;
-			}));
+				world.setBlockState(cpos, EntrancePipe.BLOCK.getDefaultState());
+			});
 		}
 
 	}

@@ -16,18 +16,19 @@ import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class Spoon extends Item {
 	public static final SoundEvent HIT = new SoundEvent(Main.id("hit_spoon"));
 	public static SoundEvent BREAK = new SoundEvent(Main.id("break_spoon"));
 	public static Map<Pair<Block,Block>, SpoonDo> CRAFT = new HashMap<>();
-	public static Map<Item, Predicate<ItemUsageContext>> PLACE = new HashMap<>();
+	public static Map<Item, SpoonDoLessSided> PLACE = new HashMap<>();
+	public static Map<Pair<Item,Block>, SpoonDoLess> INFUSE = new HashMap<>();
 	public static Item ITEM;
 
 	public static void register() {
@@ -45,20 +46,26 @@ public class Spoon extends Item {
 	}
 
 	public ActionResult useOnBlock(ItemUsageContext context) {
-		{
-			PlayerEntity p = context.getPlayer();
-			if (p != null) {
-				Predicate<ItemUsageContext> placeBlock = PLACE.get(p.getOffHandStack().getItem());
-				if (placeBlock != null) {
-					if (placeBlock.test(context)) return ActionResult.SUCCESS;
-				}
-			}
-		}
+		ItemStack stack = context.getStack();
+		if (!stack.isOf(ITEM)) return ActionResult.PASS;
+		ItemStack offhandStack = context.getPlayer() == null ? null : context.getPlayer().getOffHandStack();
 		World world = context.getWorld();
 		BlockPos pos = context.getBlockPos();
-		ItemStack stack = context.getStack();
-		stack.setDamage(stack.getDamage()-1);
 		BlockState state = world.getBlockState(pos);
+		if (offhandStack != null) {
+			SpoonDoLessSided placeBlock = PLACE.get(offhandStack.getItem());
+			if (placeBlock != null) {
+				ActionResult ret = placeBlock.act(world, pos, state, offhandStack, context.getSide());
+				if (ret != null) return ret;
+			}
+		}
+		if (offhandStack != null) {
+			SpoonDoLess infuse = INFUSE.get(new Pair<>(offhandStack.getItem(), state.getBlock()));
+			if (infuse != null) {
+				ActionResult ret = infuse.act(world, pos, state, offhandStack);
+				if (ret != null) return ret;
+			}
+		}
 		if (state.getBlock() instanceof Spoonable) {
 			ActionResult ret = ((Spoonable)state.getBlock()).operate$onUse(state, world, pos, context);
 			if (ret != null) {
@@ -67,6 +74,7 @@ public class Spoon extends Item {
 				return ret;
 			}
 		}
+		stack.setDamage(stack.getDamage()-1);
 		if (stack.getDamage() == 0) {
 			BlockPos cpos = pos.offset(context.getSide().getOpposite());
 			BlockState cstate = world.getBlockState(cpos);
@@ -102,4 +110,10 @@ public class Spoon extends Item {
 		void act(World world, BlockPos pos, BlockPos cpos, BlockState state, BlockState cstate);
 	}
 
+	public interface SpoonDoLess{
+		ActionResult act(World world, BlockPos pos, BlockState state, ItemStack offhand);
+	}
+	public interface SpoonDoLessSided{
+		ActionResult act(World world, BlockPos pos, BlockState state, ItemStack offhand, Direction side);
+	}
 }
