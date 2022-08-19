@@ -17,18 +17,21 @@ import net.minecraft.util.math.random.Random;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoonable;
 
 public abstract class AbstractPipe extends Block implements BlockEntityProvider, Spoonable {
 	public static final VoxelShape collisionShape =  Block.createCuboidShape(4,4,4,12,12,12);
 	public AbstractPipe() {
-		super(Settings.of(Material.GLASS).nonOpaque().strength(.35f));
+		super(Settings.of(Material.PISTON).nonOpaque().strength(.35f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 	}
 
+	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return collisionShape;
 	}
 
+	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return collisionShape;
 	}

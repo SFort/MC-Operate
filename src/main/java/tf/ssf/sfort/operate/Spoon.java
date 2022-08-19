@@ -11,7 +11,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
@@ -24,16 +23,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Spoon extends Item {
-	public static final SoundEvent HIT = new SoundEvent(Main.id("hit_spoon"));
-	public static SoundEvent BREAK = new SoundEvent(Main.id("break_spoon"));
 	public static Map<Pair<Block,Block>, SpoonDo> CRAFT = new HashMap<>();
 	public static Map<Item, SpoonDoLessSided> PLACE = new HashMap<>();
 	public static Map<Pair<Item,Block>, SpoonDoLess> INFUSE = new HashMap<>();
 	public static Item ITEM;
 
 	public static void register() {
-		Registry.register(Registry.SOUND_EVENT, HIT.getId(), HIT);
-		Registry.register(Registry.SOUND_EVENT, BREAK.getId(), BREAK);
 		ITEM = Registry.register(Registry.ITEM, Main.id("wood_spoon"), new Spoon());
 	}
 
@@ -69,7 +64,7 @@ public class Spoon extends Item {
 		if (state.getBlock() instanceof Spoonable) {
 			ActionResult ret = ((Spoonable)state.getBlock()).operate$onUse(state, world, pos, context);
 			if (ret != null) {
-				world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+				world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
 				stack.setDamage(getMaxDamage());
 				return ret;
 			}
@@ -82,7 +77,7 @@ public class Spoon extends Item {
 			if (CRAFT.containsKey(key)){
 				CRAFT.get(key).act(world, pos, cpos, state, cstate);
 			} else if (world instanceof ServerWorld) {
-				world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+				world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
 			}
 			if (Config.litSpoon && state.getProperties().contains(Properties.LIT)) {
 				if (world instanceof ServerWorld) {
@@ -92,7 +87,7 @@ public class Spoon extends Item {
 			}
 			stack.setDamage(getMaxDamage());
 		} else if (world instanceof ServerWorld) {
-			world.playSound(null, pos, HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+			world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
 		}
 		return ActionResult.SUCCESS;
 	}

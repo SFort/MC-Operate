@@ -28,12 +28,12 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 import tf.ssf.sfort.operate.client.BitStakScreen;
 
@@ -45,7 +45,7 @@ import static tf.ssf.sfort.operate.client.McClient.mc;
 
 public class BitStak extends Block implements BlockEntityProvider{
 	public static final BooleanProperty POWERED = Properties.POWERED;
-	public static final DirectionProperty FACING = Properties.FACING;
+	public static final DirectionProperty FACING = Main.HORIZONTAL_FACING;
 	public static final Map<Item, Predicate<BitStakEntity>> VALID_INSNS = new HashMap<>();
 	public static final Map<Item, Integer> VALID_CONST = new HashMap<>();
 	static {
@@ -138,8 +138,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		Direction horizon = ctx.getPlayerFacing();
-		return this.getDefaultState().with(POWERED, ctx.getWorld().isReceivingRedstonePower(ctx.getBlockPos())).with(FACING, horizon.getOpposite());
+		return this.getDefaultState().with(POWERED, ctx.getWorld().isReceivingRedstonePower(ctx.getBlockPos())).with(FACING, ctx.getPlayerFacing().getOpposite());
 	}
 	@Override
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
@@ -197,14 +196,12 @@ public class BitStak extends Block implements BlockEntityProvider{
 					world.removeBlock(pos, false);
 					if (world instanceof ServerWorld) {
 						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
-						world.playSound(null, pos, Spoon.BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
+						world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 					}
-					Vec3i vec = pos.subtract(cpos);
-					int x = Integer.compare(vec.getX(), 0);
-					int z = x == 0 ? vec.getZ() : 0;
 					state = BitStak.BLOCK.getDefaultState();
-					if (x != 0 || z != 0) {
-						state = state.with(FACING, Direction.fromVector(x, 0, z));
+					Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
+					if (dir != null) {
+						state = state.with(FACING, dir);
 					}
 					world.setBlockState(cpos, state);
 				};

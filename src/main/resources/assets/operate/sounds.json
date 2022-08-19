@@ -8,5 +8,10 @@
     "sounds":[
       "operate:break_spoon"
     ]
+  },
+  "loader_lock": {
+    "sounds":[
+      "operate:loader_lock"
+    ]
   }
 }

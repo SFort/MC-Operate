@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "operate:block/pipe_unloading",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "operate:block/pipe_unloading"
+    },
+    "facing=south": {
+      "model": "operate:block/pipe_unloading",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "operate:block/pipe_unloading",
+      "y": 270
+    }
+  }
+}

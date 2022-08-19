@@ -20,6 +20,7 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 
 public class EntrancePipe extends AbstractPipe{
@@ -32,36 +33,14 @@ public class EntrancePipe extends AbstractPipe{
 
 	@Override
 	public void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-		BlockEntity be = world.getBlockEntity(pos);
-		if (be instanceof EntrancePipeEntity) {
-			if (entity instanceof ItemEntity && entity.isAlive()) {
+		if (entity instanceof ItemEntity && entity.isAlive()) {
+			BlockEntity be = world.getBlockEntity(pos);
+			if (be instanceof EntrancePipeEntity) {
 				ItemStack stack = ((ItemEntity) entity).getStack();
-					Direction dir;
-					Vec3d epos = entity.getPos();
-					double x = pos.getX() - epos.x;
-					double y = pos.getY() - epos.y;
-					double z = pos.getZ() - epos.z;
-					double ax = Math.abs(x);
-					double ay = Math.abs(y);
-					double az = Math.abs(z);
-					if (ax>ay){
-						if (ax>az){
-							if (x<0) dir = Direction.EAST;
-							else dir = Direction.WEST;
-						} else {
-							if (z>0) dir = Direction.NORTH;
-							else dir = Direction.SOUTH;
-						}
-					} else if (az>ay) {
-						if (z>0) dir = Direction.NORTH;
-						else dir = Direction.SOUTH;
-					} else if (y<0) {
-						dir = Direction.UP;
-					} else {
-						dir = Direction.DOWN;
-					}
-					if (((EntrancePipeEntity) be).acceptItemFrom(stack, dir)) entity.kill();
-					else entity.addVelocity(world.random.nextDouble()-.5, dir == Direction.UP ? .5 : 0, world.random.nextDouble()-.5);
+				Vec3d epos = entity.getPos();
+				Direction dir = Main.dirFromVec(pos.getX() - epos.x, pos.getY() - epos.y, pos.getZ() - epos.z);
+				if (((EntrancePipeEntity) be).acceptItemFrom(stack, dir)) entity.kill();
+				else entity.addVelocity(world.random.nextDouble() - .5, dir == Direction.UP ? .5 : 0, world.random.nextDouble() - .5);
 			}
 		}
 	}
@@ -75,7 +54,7 @@ public class EntrancePipe extends AbstractPipe{
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
-					world.playSound(null, pos, Spoon.BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
+					world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 				}
 				world.setBlockState(cpos, EntrancePipe.BLOCK.getDefaultState());
 			});

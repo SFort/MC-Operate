@@ -110,7 +110,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				Direction dir = randDir.get(di);
 				if (entry.origin != dir && (connectedSides & (1 << dir.ordinal())) != 0) {
 					BlockPos offset = pos.offset(dir);
-					if (world.isAir(offset)){
+
+					if (world.getBlockState(offset).getCollisionShape(world, offset).isEmpty()){
 						Vec3i dropDir = dir.getVector();
 						ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
 						itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());

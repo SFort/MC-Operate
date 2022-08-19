@@ -26,6 +26,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 import tf.ssf.sfort.operate.Spoonable;
 
@@ -34,7 +35,7 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 	public static final VoxelShape collisionShape =  Block.createCuboidShape(4,4,4,12,12,12);
 	public static Block BLOCK;
 	public ColorTube() {
-		super(Settings.of(Material.PISTON).nonOpaque().strength(.5f));
+		super(Settings.of(Material.PISTON).nonOpaque().strength(.5f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 		setDefaultState(stateManager.getDefaultState().with(ENABLED, false));
 	}
 
