@@ -81,6 +81,7 @@ public class Jolt extends Block implements BlockEntityProvider {
 						world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 					}
 					world.setBlockState(cpos, Jolt.BLOCK.getDefaultState());
+					return true;
 				});
 		}
 	}

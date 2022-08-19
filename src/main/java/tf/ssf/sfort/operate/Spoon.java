@@ -73,11 +73,11 @@ public class Spoon extends Item {
 		if (stack.getDamage() == 0) {
 			BlockPos cpos = pos.offset(context.getSide().getOpposite());
 			BlockState cstate = world.getBlockState(cpos);
-			Pair<Block, Block> key = new Pair<>(state.getBlock(), cstate.getBlock());
-			if (CRAFT.containsKey(key)){
-				CRAFT.get(key).act(world, pos, cpos, state, cstate);
-			} else if (world instanceof ServerWorld) {
-				world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+			{
+				SpoonDo craft = CRAFT.get(new Pair<>(state.getBlock(), cstate.getBlock()));
+				if (craft == null || !craft.act(world, pos, cpos, state, cstate)){
+					world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.5F, world.getRandom().nextFloat() * 0.1F + 0.8F + (stack.getDamage() * 0.05F));
+				}
 			}
 			if (Config.litSpoon && state.getProperties().contains(Properties.LIT)) {
 				if (world instanceof ServerWorld) {
@@ -102,7 +102,7 @@ public class Spoon extends Item {
 
 	//Still bad but better
 	public interface SpoonDo{
-		void act(World world, BlockPos pos, BlockPos cpos, BlockState state, BlockState cstate);
+		boolean act(World world, BlockPos pos, BlockPos cpos, BlockState state, BlockState cstate);
 	}
 
 	public interface SpoonDoLess{

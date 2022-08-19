@@ -57,6 +57,7 @@ public class EntrancePipe extends AbstractPipe{
 					world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 				}
 				world.setBlockState(cpos, EntrancePipe.BLOCK.getDefaultState());
+				return true;
 			});
 		}
 

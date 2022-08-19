@@ -25,11 +25,6 @@ public class EntrancePipeEntity extends AbstractPipeEntity implements SidedInven
 	}
 
 	@Override
-	public int getPipeTransferTime() {
-		return 10;
-	}
-
-	@Override
 	public Block asBlock() {
 		return EntrancePipe.BLOCK;
 	}

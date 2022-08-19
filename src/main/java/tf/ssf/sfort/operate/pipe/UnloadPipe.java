@@ -21,7 +21,7 @@ import net.minecraft.state.StateManager;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
@@ -34,8 +34,19 @@ public class UnloadPipe extends AbstractPipe{
 	public static Block BLOCK;
 	public static final DirectionProperty FACING = Main.HORIZONTAL_FACING;
 
-	public static final VoxelShape collisionShape =  Block.createCuboidShape(4,4,.1,12,12,12);
-	public static final VoxelShape outlineShape =  Block.createCuboidShape(4,4, 0,12,12,12);
+	public static final VoxelShape[] collisionShape = new VoxelShape[]{
+			Block.createCuboidShape(4,4,4,12,12,15.9),
+			Block.createCuboidShape(.1,4,4,12,12,12),
+			Block.createCuboidShape(4,4,.1,12,12,12),
+			Block.createCuboidShape(4,4,4,15.9,12,12)
+
+	};
+	public static final VoxelShape[] outlineShape =  new VoxelShape[]{
+			Block.createCuboidShape(4,4, 4,12,12,16),
+			Block.createCuboidShape(0,4, 4,12,12,12),
+			Block.createCuboidShape(4,4, 0,12,12,12),
+			Block.createCuboidShape(4,4, 4,16,12,12)
+	};
 
 	public UnloadPipe() {
 		super(Settings.of(Material.PISTON).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
@@ -87,12 +98,12 @@ public class UnloadPipe extends AbstractPipe{
 
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		return outlineShape;
+		return outlineShape[MathHelper.clamp(state.get(FACING).getHorizontal(), 0, 3)];
 	}
 
 	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		return collisionShape;
+		return collisionShape[MathHelper.clamp(state.get(FACING).getHorizontal(), 0, 3)];
 	}
 
 	@Override
@@ -106,17 +117,15 @@ public class UnloadPipe extends AbstractPipe{
 		UnloadPipeEntity.register();
 		if (true) {
 			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.STONE), (world, pos, cpos, state, cstate) -> {
+				Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
+				if (dir == null) return false;
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
 					world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 				}
-				state = BLOCK.getDefaultState();
-				Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
-				if (dir != null) {
-					state = state.with(FACING, dir);
-				}
-				world.setBlockState(cpos, state);
+				world.setBlockState(cpos, BLOCK.getDefaultState().with(FACING, dir));
+				return true;
 			});
 		}
 

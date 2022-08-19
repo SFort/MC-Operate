@@ -61,10 +61,9 @@ public abstract class AbstractPipe extends Block implements BlockEntityProvider,
 			if(e instanceof AbstractPipeEntity) {
 				Direction dir = blockHitResult.getSide();
 				((AbstractPipeEntity)e).wrenchSide(dir);
-				e = world.getBlockEntity(blockPos.offset(dir));
 				PlayerEntity player = blockHitResult.getPlayer();
-				if (e instanceof AbstractPipeEntity && player != null && !player.isSneaky()) {
-					((AbstractPipeEntity)e).wrenchSide(dir.getOpposite());
+				if (player != null && !player.isSneaky()) {
+					((AbstractPipeEntity)e).wrenchNeighbour(dir);
 				}
 				return ActionResult.SUCCESS;
 			}

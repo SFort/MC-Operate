@@ -20,11 +20,6 @@ public class BasicPipeEntity extends AbstractPipeEntity {
 	}
 
 	@Override
-	public int getPipeTransferTime() {
-		return 10;
-	}
-
-	@Override
 	public Block asBlock() {
 		return BasicPipe.BLOCK;
 	}

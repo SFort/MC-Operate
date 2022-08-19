@@ -13,26 +13,15 @@ import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 
-public class AbstractPipeRenderer {
+public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 
 	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
 
-	public void render(AbstractPipeEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
-		for (Direction dir : Direction.values()) {
-			matrix.push();
-			matrix.translate(.5, .5, .5);
-			matrix.push();
-			matrix.multiply(dir.getRotationQuaternion());
-			switch (dir) {
-				case DOWN -> matrix.scale(1, 1, -1);
-				case WEST, NORTH -> matrix.scale(-1, 1, 1);
-			}
-			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
-				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
-			}
-			matrix.pop();
-			matrix.pop();
-		}
+	public void render(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		renderConnections(entity, tickDelta, matrix, vertex, light, overlay);
+		renderItems(entity, tickDelta, matrix, vertex, light, overlay);
+	}
+	public void renderItems(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
 		World world = entity.getWorld();
 		if (world == null) return;
@@ -69,6 +58,23 @@ public class AbstractPipeRenderer {
 			matrix.push();
 			matrix.scale(.5f, .5f, .5f);
 			ir.renderItem(null, entry.stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			matrix.pop();
+			matrix.pop();
+		}
+	}
+	public void renderConnections(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		for (Direction dir : Direction.values()) {
+			matrix.push();
+			matrix.translate(.5, .5, .5);
+			matrix.push();
+			matrix.multiply(dir.getRotationQuaternion());
+			switch (dir) {
+				case DOWN -> matrix.scale(1, 1, -1);
+				case WEST, NORTH -> matrix.scale(-1, 1, 1);
+			}
+			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
+				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
+			}
 			matrix.pop();
 			matrix.pop();
 		}

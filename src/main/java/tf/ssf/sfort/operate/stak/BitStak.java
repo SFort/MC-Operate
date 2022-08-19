@@ -193,17 +193,15 @@ public class BitStak extends Block implements BlockEntityProvider{
 			BitStakEntity.register();
 			if (Config.bit){
 				Spoon.SpoonDo craft = (world, pos, cpos, state, cstate) -> {
+					Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
+					if (dir == null) return false;
 					world.removeBlock(pos, false);
 					if (world instanceof ServerWorld) {
 						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
 						world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 					}
-					state = BitStak.BLOCK.getDefaultState();
-					Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
-					if (dir != null) {
-						state = state.with(FACING, dir);
-					}
-					world.setBlockState(cpos, state);
+					world.setBlockState(cpos, BLOCK.getDefaultState().with(FACING, dir));
+					return true;
 				};
 				Spoon.CRAFT.put(new Pair<>(Blocks.SCULK, Blocks.REDSTONE_BLOCK), craft);
 				Spoon.CRAFT.put(new Pair<>(Blocks.REDSTONE_BLOCK, Blocks.SCULK), craft);

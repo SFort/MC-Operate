@@ -57,6 +57,7 @@ public class ObsidianDispenser extends DispenserBlock {
 						world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 					}
 					world.setBlockState(cpos, ObsidianDispenser.BLOCK.getDefaultState().with(DispenserBlock.FACING, cstate.get(DispenserBlock.FACING)));
+					return true;
 				});
 		}
 	}
