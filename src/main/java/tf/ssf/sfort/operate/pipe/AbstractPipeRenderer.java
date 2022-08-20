@@ -1,5 +1,6 @@
 package tf.ssf.sfort.operate.pipe;
 
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
@@ -7,6 +8,7 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
@@ -63,6 +65,8 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		}
 	}
 	public void renderConnections(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		World world = entity.getWorld();
+		BlockPos.Mutable pos = entity.getPos().mutableCopy();
 		for (Direction dir : Direction.values()) {
 			matrix.push();
 			matrix.translate(.5, .5, .5);
@@ -74,12 +78,32 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 			}
 			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
 				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
+				if (world != null) {
+					pos.set(entity.getPos()).move(dir);
+					BlockEntity nentity = world.getBlockEntity(pos);
+					if (nentity instanceof AbstractPipeEntity) {
+						if (((AbstractPipeEntity) nentity).shouldSideRenderDisconnect(dir.getOpposite())) {
+							drawDisconnectedSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .7f);
+						}
+					}
+				}
 			}
 			matrix.pop();
 			matrix.pop();
 		}
 	}
 
+	public static void drawDisconnectedSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
+		drawLine(entry, vertexConsumer, -.125f, .5f, .125f, -.125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .5f, -.125f, -.125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .5f, .125f, .125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .5f, -.125f, .125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
+
+		drawLine(entry, vertexConsumer, -.125f, .5f, -.125f, .125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .5f, -.125f, -.125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .5f, .125f, .125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .5f, .125f, -.125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
+	}
 	public static void drawSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
 		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
 		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);

@@ -100,7 +100,11 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 		}
 		return entry.travelTime;
 	}
-
+	@Override
+	public boolean shouldSideRenderDisconnect(Direction dir) {
+		int mask = 1 << dir.ordinal();
+		return (connectedSides & mask) == 0 && (connectedLowPrioritySides & mask) == 0;
+	}
 	@Override
 	public Block asBlock() {
 		return PriorityPipe.BLOCK;

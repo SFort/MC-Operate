@@ -15,6 +15,7 @@ public class PriorityPipeRenderer extends AbstractPipeRenderer<PriorityPipeEntit
 
 	@Override
 	public void renderConnections(PriorityPipeEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+		super.renderConnections(entity, tickDelta, matrix, vertex, light, overlay);
 		for (Direction dir : Direction.values()) {
 			matrix.push();
 			matrix.translate(.5, .5, .5);
@@ -23,9 +24,6 @@ public class PriorityPipeRenderer extends AbstractPipeRenderer<PriorityPipeEntit
 			switch (dir) {
 				case DOWN -> matrix.scale(1, 1, -1);
 				case WEST, NORTH -> matrix.scale(-1, 1, 1);
-			}
-			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
-				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
 			}
 			if ((entity.connectedLowPrioritySides & (1 << dir.ordinal())) != 0) {
 				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .7f);

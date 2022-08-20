@@ -225,6 +225,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		markDirty();
 		return true;
 	}
+	public boolean shouldSideRenderDisconnect(Direction dir) {
+		return (connectedSides & (1 << dir.ordinal())) == 0;
+	}
 	public int getPipeTransferTime() {
 		return 10;
 	}
