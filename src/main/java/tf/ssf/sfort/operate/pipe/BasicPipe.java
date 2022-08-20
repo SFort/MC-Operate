@@ -33,6 +33,7 @@ public class BasicPipe extends AbstractPipe{
 		BasicPipeEntity.register();
 		if (true) {
 			Spoon.INFUSE.put(new Pair<>(Items.IRON_INGOT, Blocks.STONE), (world, pos, state, offhand) -> {
+				offhand.decrement(1);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
 					world.playSound(null, pos, state.getSoundGroup().getBreakSound(), SoundCategory.BLOCKS, 1, world.getRandom().nextFloat() * 0.1F + 0.9F);

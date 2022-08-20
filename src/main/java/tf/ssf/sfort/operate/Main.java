@@ -8,6 +8,7 @@ import net.minecraft.util.math.Vec3i;
 import tf.ssf.sfort.operate.jolt.Jolt;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
 import tf.ssf.sfort.operate.pipe.EntrancePipe;
+import tf.ssf.sfort.operate.pipe.FilterPipe;
 import tf.ssf.sfort.operate.pipe.PriorityPipe;
 import tf.ssf.sfort.operate.pipe.UnloadPipe;
 import tf.ssf.sfort.operate.punch.Punch;
@@ -34,6 +35,7 @@ public class Main implements ModInitializer {
 		EntrancePipe.register();
 		UnloadPipe.register();
 		PriorityPipe.register();
+		FilterPipe.register();
 		Sounds.register();
 
 		//BP.register();

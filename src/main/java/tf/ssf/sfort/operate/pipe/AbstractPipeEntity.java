@@ -196,15 +196,12 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	}
 
 	private static boolean canMergeItems(ItemStack stak1, ItemStack stak2, int slotLimit) {
-		if (!stak1.isOf(stak2.getItem())) {
+		if (!stak1.isOf(stak2.getItem()))
 			return false;
-		}
-		if (stak1.getDamage() != stak2.getDamage()) {
+		if (stak1.getDamage() != stak2.getDamage())
 			return false;
-		}
-		if (stak1.getCount() > Math.min(stak1.getMaxCount(), slotLimit)) {
+		if (stak1.getCount() > Math.min(stak1.getMaxCount(), slotLimit))
 			return false;
-		}
 		return ItemStack.areNbtEqual(stak1, stak2);
 	}
 
