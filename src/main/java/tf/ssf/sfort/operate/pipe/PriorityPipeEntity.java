@@ -1,5 +1,7 @@
 package tf.ssf.sfort.operate.pipe;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
@@ -101,9 +103,10 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 		return entry.travelTime;
 	}
 	@Override
-	public boolean shouldSideRenderDisconnect(Direction dir) {
+	@Environment(EnvType.CLIENT)
+	public AbstractPipeRenderer.DisconnectedSideLinesRenderer getDisconnectedSideLinesRenderer(Direction dir) {
 		int mask = 1 << dir.ordinal();
-		return (connectedSides & mask) == 0 && (connectedLowPrioritySides & mask) == 0;
+		return (connectedSides & mask) == 0 && (connectedLowPrioritySides & mask) == 0 ? AbstractPipeRenderer::drawDisconnectedSideLines : null;
 	}
 	@Override
 	public Block asBlock() {

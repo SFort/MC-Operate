@@ -1,5 +1,7 @@
 package tf.ssf.sfort.operate.pipe;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -225,8 +227,10 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		markDirty();
 		return true;
 	}
-	public boolean shouldSideRenderDisconnect(Direction dir) {
-		return (connectedSides & (1 << dir.ordinal())) == 0;
+
+	@Environment(EnvType.CLIENT)
+	public AbstractPipeRenderer.DisconnectedSideLinesRenderer getDisconnectedSideLinesRenderer(Direction dir) {
+		return (connectedSides & (1 << dir.ordinal())) == 0 ? AbstractPipeRenderer::drawDisconnectedSideLines : null;
 	}
 	public int getPipeTransferTime() {
 		return 10;
