@@ -17,5 +17,6 @@ Client and Server side
 - Adds Auto Crafter
 - Computer
 - Color Cables
+- Item Pipes
 - ...in future, if i'm not lazy
 

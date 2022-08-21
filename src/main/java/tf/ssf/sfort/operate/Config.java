@@ -22,6 +22,7 @@ public class Config {
 	public static Boolean dispenseGunpowder = true;
 	public static boolean litSpoon = true;
 	public static Boolean fancyInv = false;
+	public static Boolean basicPipe = true;
 
 	public static void load() {
 		File confFile = new File(
@@ -41,7 +42,9 @@ public class Config {
 					"^-Fancy Block inventory render  [on] on | off | examine",
 					"^-Crafter /Punch      [on] on | off | unregistered",
 					"^-Computer /BitStak   [on] on | off | unregistered",
-					"^-Color cable         [on] on | off | unregistered"
+					"^-Color tube          [on] on | off | unregistered",
+					//TODO should probably allow each pipe to be toggled separately
+					"^-Item pipes          [on] on | off | unregistered"
 					);
 			String[] ls = la.toArray(new String[Math.max(la.size(), defaultDesc.size() * 2) | 1]);
 			final int hash = Arrays.hashCode(ls);
@@ -66,6 +69,8 @@ public class Config {
 			ls[14]=bit==null?"unregistered": bit?"on":"off";
 			try{colorTube=ls[16].contains("unregistered")? null : !ls[16].contains("off");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#16\n" + e);}
 			ls[16]=colorTube==null?"unregistered": colorTube?"on":"off";
+			try{basicPipe=ls[18].contains("unregistered")? null : !ls[18].contains("off");}catch (Exception e){LOGGER.log(Level.DEBUG, "tf.ssf.sfort.operate config#18\n" + e);}
+			ls[18]=basicPipe==null?"unregistered": basicPipe?"on":"off";
 
 			if (hash != Arrays.hashCode(ls))
 				Files.write(confFile.toPath(), Arrays.asList(ls));

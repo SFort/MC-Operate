@@ -8,11 +8,12 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.Config;
 
 public class PriorityPipeRenderer extends AbstractPipeRenderer<PriorityPipeEntity> {
 
 	public static void register() {
-		//if (Config.colorTube == null) return;
+		if (Config.basicPipe == null) return;
 		BlockEntityRendererRegistry.register(PriorityPipeEntity.ENTITY_TYPE, ctx -> new PriorityPipeRenderer()::render);
 	}
 

@@ -5,13 +5,10 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 
@@ -70,38 +67,12 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 	public List<Direction> getOutputs(TransportedStack transport){
 		List<Direction> ret = Arrays.stream(Direction.values()).filter(d -> transport.origin != d && (connectedSides & (1 << d.ordinal())) != 0).collect(Collectors.toList());
 		Collections.shuffle(ret);
+		List<Direction> low = Arrays.stream(Direction.values()).filter(d -> transport.origin != d && (connectedLowPrioritySides & (1 << d.ordinal())) != 0).collect(Collectors.toList());
+		Collections.shuffle(low);
+		ret.addAll(low);
 		return ret;
 	}
-	public List<Direction> getLowPriorityOutputs(TransportedStack transport){
-		List<Direction> ret = Arrays.stream(Direction.values()).filter(d -> transport.origin != d && (connectedLowPrioritySides & (1 << d.ordinal())) != 0).collect(Collectors.toList());
-		Collections.shuffle(ret);
-		return ret;
-	}
-	@Override
-	public long progressQueue() {
-		if (world == null) return -1;
-		if (itemQueue.isEmpty()) return -1;
 
-		TransportedStack entry = itemQueue.element();
-		while (entry.travelTime <= world.getLevelProperties().getTime()) {
-			if (!transportStack(entry, getOutputs(entry))) {
-				if (!transportStack(entry, getLowPriorityOutputs(entry))) {
-					Vec3i dropDir = entry.origin.getOpposite().getVector();
-					ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
-					itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
-					world.spawnEntity(itemEntity);
-				}
-			}
-			itemQueue.poll();
-			markDirty();
-			if (itemQueue.isEmpty()) {
-				return -1;
-			} else {
-				entry = itemQueue.element();
-			}
-		}
-		return entry.travelTime;
-	}
 	@Override
 	@Environment(EnvType.CLIENT)
 	public AbstractPipeRenderer.DisconnectedSideLinesRenderer getDisconnectedSideLinesRenderer(Direction dir) {

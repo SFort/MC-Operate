@@ -11,6 +11,7 @@ import net.minecraft.item.Items;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.Config;
 
 public class FilterPipeRenderer extends AbstractPipeRenderer<FilterPipeEntity> {
 	public static final Quaternion Y_ROTATION = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
@@ -18,7 +19,7 @@ public class FilterPipeRenderer extends AbstractPipeRenderer<FilterPipeEntity> {
 
 
 	public static void register() {
-		//if (Config.colorTube == null) return;
+		if (Config.basicPipe == null) return;
 		BlockEntityRendererRegistry.register(FilterPipeEntity.ENTITY_TYPE, ctx -> new FilterPipeRenderer()::render);
 	}
 	@Override

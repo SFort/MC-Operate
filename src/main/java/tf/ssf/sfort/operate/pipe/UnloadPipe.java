@@ -26,6 +26,7 @@ import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
@@ -112,11 +113,11 @@ public class UnloadPipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (false) return;
+		if (Config.basicPipe == null) return;
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("unloading_pipe"), new UnloadPipe());
 		UnloadPipeEntity.register();
-		if (true) {
-			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.STONE), (world, pos, cpos, state, cstate) -> {
+		if (Config.basicPipe) {
+			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
 				Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
 				if (dir == null) return false;
 				world.removeBlock(pos, false);
@@ -130,6 +131,6 @@ public class UnloadPipe extends AbstractPipe{
 		}
 
 	}
-	@Override public Item asItem(){return Items.IRON_INGOT;}
+	@Override public Item asItem(){return Items.HOPPER;}
 
 }

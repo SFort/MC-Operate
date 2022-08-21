@@ -1,8 +1,8 @@
 {
   "textures": {
-    "particle": "operate:block/item_pipe",
-    "0": "operate:block/item_pipe",
-    "1": "operate:block/item_pipe_vertical"
+    "particle": "operate:block/item_pipe_unload",
+    "0": "operate:block/item_pipe_unload",
+    "1": "operate:block/item_pipe_vertical_unload"
   },
   "elements": [
     {   "from": [ 4, 4, 4 ],

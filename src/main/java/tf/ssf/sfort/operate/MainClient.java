@@ -1,6 +1,7 @@
 package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ClientModInitializer;
+import tf.ssf.sfort.operate.client.BitStakScreen;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
@@ -9,6 +10,8 @@ import tf.ssf.sfort.operate.pipe.PriorityPipeRenderer;
 import tf.ssf.sfort.operate.pipe.UnloadPipeRenderer;
 import tf.ssf.sfort.operate.punch.PunchRenderer;
 import tf.ssf.sfort.operate.tube.ColorTubeRenderer;
+
+import static tf.ssf.sfort.operate.client.McClient.mc;
 
 
 public class MainClient implements ClientModInitializer {
@@ -23,5 +26,8 @@ public class MainClient implements ClientModInitializer {
 		PriorityPipeRenderer.register();
 		FilterPipeRenderer.register();
 		//BitStakRenderer.register();
+	}
+	public static void openBitStakStreen(){
+		mc.setScreen(new BitStakScreen());
 	}
 }

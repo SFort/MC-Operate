@@ -33,15 +33,13 @@ import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.MainClient;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
-import tf.ssf.sfort.operate.client.BitStakScreen;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
-
-import static tf.ssf.sfort.operate.client.McClient.mc;
 
 public class BitStak extends Block implements BlockEntityProvider{
 	public static final BooleanProperty POWERED = Properties.POWERED;
@@ -182,7 +180,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 				}
 			}
 		} else if(player.getMainHandStack().isEmpty() && player.isSneaky()) {
-			mc.setScreen(new BitStakScreen());
+			MainClient.openBitStakStreen();
 		}
 		return ActionResult.CONSUME;
 	}

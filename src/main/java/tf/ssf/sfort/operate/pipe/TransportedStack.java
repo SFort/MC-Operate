@@ -27,6 +27,10 @@ public class TransportedStack {
 		tag.putLong("ttime", this.travelTime);
 	}
 
+	public Direction getPreferredPath(){
+		return null;
+	}
+
 	public NbtCompound toTag(NbtCompound tag) {
 		writeTag(tag);
 		return tag;

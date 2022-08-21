@@ -11,10 +11,10 @@ import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
+import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
@@ -28,11 +28,11 @@ public class BasicPipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (false) return;
+		if (Config.basicPipe == null) return;
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("basic_pipe"), new BasicPipe());
 		BasicPipeEntity.register();
-		if (true) {
-			Spoon.INFUSE.put(new Pair<>(Items.IRON_INGOT, Blocks.STONE), (world, pos, state, offhand) -> {
+		if (Config.basicPipe) {
+			Spoon.INFUSE.put(new Pair<>(Items.IRON_INGOT, Blocks.BLACKSTONE), (world, pos, state, offhand) -> {
 				offhand.decrement(1);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);

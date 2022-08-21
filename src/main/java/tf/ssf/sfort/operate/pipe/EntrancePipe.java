@@ -19,6 +19,7 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
@@ -38,7 +39,7 @@ public class EntrancePipe extends AbstractPipe{
 			if (be instanceof EntrancePipeEntity) {
 				ItemStack stack = ((ItemEntity) entity).getStack();
 				Vec3d epos = entity.getPos();
-				Direction dir = Main.dirFromVec(pos.getX() - epos.x, pos.getY() - epos.y, pos.getZ() - epos.z);
+				Direction dir = Main.dirFromVec(epos.x - pos.getX(), epos.y - pos.getY(), epos.z - pos.getZ());
 				if (((EntrancePipeEntity) be).acceptItemFrom(stack, dir)) entity.kill();
 				else entity.addVelocity(world.random.nextDouble() - .5, dir == Direction.UP ? .5 : 0, world.random.nextDouble() - .5);
 			}
@@ -46,11 +47,11 @@ public class EntrancePipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (false) return;
+		if (Config.basicPipe == null) return;
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("entrance_pipe"), new EntrancePipe());
 		EntrancePipeEntity.register();
-		if (true) {
-			Spoon.CRAFT.put(new Pair<>(Blocks.IRON_BLOCK, Blocks.STONE), (world, pos, cpos, state, cstate) -> {
+		if (Config.basicPipe) {
+			Spoon.CRAFT.put(new Pair<>(Blocks.IRON_BLOCK, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);

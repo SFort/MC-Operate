@@ -7,7 +7,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
@@ -19,7 +18,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
 import net.minecraft.world.tick.OrderedTick;
 
 import java.util.Arrays;
@@ -126,7 +124,14 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 		TransportedStack entry = itemQueue.element();
 		while (entry.travelTime <= world.getLevelProperties().getTime()) {
-			if (!transportStack(entry, getOutputs(entry))) {
+			transport :{
+				List<Direction> outputs = getOutputs(entry);
+				Direction preferredPath = entry.getPreferredPath();
+				if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath))
+					break transport;
+				if (transportStack(entry, outputs))
+					break transport;
+
 				Vec3i dropDir = entry.origin.getOpposite().getVector();
 				ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
 				itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());

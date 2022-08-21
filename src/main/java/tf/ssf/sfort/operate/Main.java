@@ -4,6 +4,7 @@ import net.fabricmc.api.ModInitializer;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import tf.ssf.sfort.operate.jolt.Jolt;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
@@ -44,24 +45,12 @@ public class Main implements ModInitializer {
 		return new Identifier("operate", name);
 	}
 	public static Direction dirFromVec(double x, double y, double z) {
-		double ax = Math.abs(x);
-		double ay = Math.abs(y);
-		double az = Math.abs(z);
-		if (ax>ay){
-			if (ax>az){
-				if (x<0) return Direction.EAST;
-				return Direction.WEST;
-			} else {
-				if (z>0) return Direction.NORTH;
-				return Direction.SOUTH;
-			}
-		} else if (az>ay) {
-			if (z>0) return Direction.NORTH;
-			return Direction.SOUTH;
-		} else if (y<0) {
-			return Direction.UP;
-		}
-		return Direction.DOWN;
+		if (y<0) return Direction.DOWN;
+		if (y>=.75) return Direction.UP;
+		if (x<.1) return Direction.WEST;
+		if (x>=.75) return Direction.EAST;
+		if (z<.1) return Direction.NORTH;
+		return Direction.SOUTH;
 	}
 	public static Direction dirFromHorizontalVec(Vec3i vec) {
 		int x = Integer.compare(vec.getX(), 0);
