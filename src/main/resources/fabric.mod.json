@@ -25,7 +25,9 @@
   },
   "depends": {
     "fabricloader": "*",
-    "fabric": "*",
+    "fabric-rendering-v1": "*",
+    "fabric-object-builder-api-v1": "*",
+    "fabric-registry-sync-v0": "*",
     "minecraft": "*"
   }
 }

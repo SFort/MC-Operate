@@ -1,10 +1,11 @@
 package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 import tf.ssf.sfort.operate.jolt.Jolt;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
@@ -19,6 +20,7 @@ import tf.ssf.sfort.operate.tube.ColorTube;
 
 public class Main implements ModInitializer {
 	public static final DirectionProperty HORIZONTAL_FACING = DirectionProperty.of("facing", (facing) -> facing != Direction.UP && facing != Direction.DOWN);
+	public static final ChunkTicketType<BlockPos> PIPE_TICKET_TYPE = ChunkTicketType.create("portal", Vec3i::compareTo, 60);
 
 
 	@Override

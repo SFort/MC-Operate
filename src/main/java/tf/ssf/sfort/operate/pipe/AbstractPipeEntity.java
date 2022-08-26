@@ -16,9 +16,12 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.tick.OrderedTick;
+import tf.ssf.sfort.operate.Config;
+import tf.ssf.sfort.operate.Main;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -113,6 +116,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	public void pipeTick() {
 		if (world == null) return;
+		if (world instanceof ServerWorld && Config.chunkLoadPipes) {
+			((ServerWorld)world).getChunkManager().addTicket(Main.PIPE_TICKET_TYPE, new ChunkPos(pos), 3, pos);
+		}
 		long nextTransfer = progressQueue();
 		if (nextTransfer >= 0) {
 			world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, nextTransfer + 1, world.getTickOrder()));
