@@ -58,6 +58,13 @@ public class PunchEntity extends BlockEntity implements Inventory {
     }
 
     public void popInv() {
+        if (this.canCraft()) {
+            ItemStack ret = craftResult.get().craft(inv);
+            inv.clear();
+            world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
+            dropItem(ret);
+            return;
+        }
         dropItem(inv.popStack());
     }
 
