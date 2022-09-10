@@ -51,7 +51,7 @@ public class PunchRenderer {
             ItemStack item = entity.inv.inv[i];
             matrix.push();
             applyDirection.accept(matrix);
-            matrix.translate(0.28 + (i % 3) * 0.22, 0.61 - (i / 3) * 0.22, 0.95);
+            matrix.translate(0.28 + (i % 3) * 0.22, 0.61 - (i / 3) * 0.22, 0.95 + 0.01*i);
             matrix.push();
             matrix.scale(0.6f, 0.6f, 0.6f);
             if (!item.isEmpty())
