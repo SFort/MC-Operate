@@ -3,6 +3,8 @@ package tf.ssf.sfort.operate;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.FireBlock;
 import net.minecraft.block.HorizontalConnectingBlock;
 import net.minecraft.block.Material;
 import net.minecraft.entity.player.PlayerEntity;
@@ -113,9 +115,23 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	}
 
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
-		if(fromPos.getY()<pos.getY() && !world.getBlockState(fromPos).isFullCube(world,fromPos)){world.breakBlock(pos,true); return;}
-		if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up()) && !state.get(TRIGGERED)) {
-			world.createAndScheduleBlockTick(pos, this, time);
+		if(fromPos.getY()<pos.getY()){
+			if (!world.getBlockState(fromPos).isFullCube(world,fromPos)) {
+				world.breakBlock(pos, true);
+				return;
+			}
+		} else {
+			if (world.getBlockState(fromPos).getBlock() instanceof FireBlock) {
+				if (!state.get(TRIGGERED)) {
+					world.createAndScheduleBlockTick(pos, this, time);
+				}
+				return;
+			}
+		}
+		if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up())) {
+			if (!state.get(TRIGGERED)) {
+				world.createAndScheduleBlockTick(pos, this, time);
+			}
 		}
 	}
 	public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
