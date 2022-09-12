@@ -12,11 +12,11 @@ import tf.ssf.sfort.operate.Config;
 
 import java.util.function.Consumer;
 
-import static tf.ssf.sfort.operate.client.McClient.mc;
+import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class PunchRenderer {
     public static void register() {
-        if (Config.fancyInv == null || Config.punch == null) return;
+        if (Config.fancyInv == null || PunchEntity.ENTITY_TYPE == null) return;
         BlockEntityRendererRegistry.register(PunchEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> PunchRenderer::render : ctx -> PunchRenderer::look_render);
     }
 

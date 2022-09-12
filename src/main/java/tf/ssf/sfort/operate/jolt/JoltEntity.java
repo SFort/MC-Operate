@@ -149,6 +149,7 @@ public class JoltEntity extends BlockEntity implements Inventory {
         super.readNbt(tag);
         inv = ItemStack.fromNbt(tag.getCompound("item"));
         dir = tag.getByte("dir");
+        markDirty();
     }
 
     @Override

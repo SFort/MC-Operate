@@ -7,11 +7,11 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import tf.ssf.sfort.operate.Config;
 
-import static tf.ssf.sfort.operate.client.McClient.mc;
+import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class JoltRenderer {
     public static void register() {
-        if (Config.fancyInv == null || Config.jolt == null) return;
+        if (Config.fancyInv == null || JoltEntity.ENTITY_TYPE == null) return;
         BlockEntityRendererRegistry.register(JoltEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> JoltRenderer::render : ctx -> JoltRenderer::look_render);
     }
 

@@ -1,0 +1,13 @@
+{
+  "multipart": [
+    {
+      "apply": { "model": "operate:block/cylinder_case" }
+    },
+    {   "when": {"stage" :  "1"},
+      "apply": { "model": "operate:block/cylinder_gray" }
+    },
+    {   "when": {"stage": "2"},
+      "apply": { "model": "operate:block/cylinder"}
+    }
+  ]
+}

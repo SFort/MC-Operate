@@ -1,7 +1,7 @@
 package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ClientModInitializer;
-import tf.ssf.sfort.operate.client.BitStakScreen;
+import net.minecraft.client.MinecraftClient;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
@@ -9,12 +9,13 @@ import tf.ssf.sfort.operate.pipe.FilterPipeRenderer;
 import tf.ssf.sfort.operate.pipe.PriorityPipeRenderer;
 import tf.ssf.sfort.operate.pipe.UnloadPipeRenderer;
 import tf.ssf.sfort.operate.punch.PunchRenderer;
+import tf.ssf.sfort.operate.stak.cylinder.CylinderRenderer;
 import tf.ssf.sfort.operate.tube.ColorTubeRenderer;
-
-import static tf.ssf.sfort.operate.client.McClient.mc;
 
 
 public class MainClient implements ClientModInitializer {
+	public static final MinecraftClient mc = MinecraftClient.getInstance();
+
 	@Override
 	public void onInitializeClient() {
 		JoltRenderer.register();
@@ -25,9 +26,7 @@ public class MainClient implements ClientModInitializer {
 		UnloadPipeRenderer.register();
 		PriorityPipeRenderer.register();
 		FilterPipeRenderer.register();
+		CylinderRenderer.register();
 		//BitStakRenderer.register();
-	}
-	public static void openBitStakStreen(){
-		mc.setScreen(new BitStakScreen());
 	}
 }

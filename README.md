@@ -6,6 +6,7 @@ Client and Server side
 ![](img/4.gif)
 ![](img/5.gif)
 ![](img/6.gif)
+![](img/7.gif)
 
 #### Features:
 - Dispensers can use gunpowder

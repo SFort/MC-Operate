@@ -13,5 +13,10 @@
     "sounds":[
       "operate:loader_lock"
     ]
+  },
+  "bit_cylinder": {
+    "sounds":[
+      "operate:bit_cylinder"
+    ]
   }
 }

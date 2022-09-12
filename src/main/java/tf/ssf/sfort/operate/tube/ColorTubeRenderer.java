@@ -12,7 +12,7 @@ import tf.ssf.sfort.operate.Config;
 public class ColorTubeRenderer {
 
 	public static void register() {
-		if (Config.colorTube == null) return;
+		if (ColorTubeEntity.ENTITY_TYPE == null) return;
 		BlockEntityRendererRegistry.register(ColorTubeEntity.ENTITY_TYPE, ctx -> new ColorTubeRenderer()::render);
 	}
 

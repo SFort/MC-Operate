@@ -15,6 +15,8 @@ import tf.ssf.sfort.operate.pipe.PriorityPipe;
 import tf.ssf.sfort.operate.pipe.UnloadPipe;
 import tf.ssf.sfort.operate.punch.Punch;
 import tf.ssf.sfort.operate.stak.BitStak;
+import tf.ssf.sfort.operate.stak.cylinder.Cylinder;
+import tf.ssf.sfort.operate.stak.cylinder.ItemCylinder;
 import tf.ssf.sfort.operate.tube.ColorTube;
 
 
@@ -40,8 +42,8 @@ public class Main implements ModInitializer {
 		PriorityPipe.register();
 		FilterPipe.register();
 		Sounds.register();
-
-		//BP.register();
+		ItemCylinder.register();
+		Cylinder.register();
 	}
 	public static Identifier id(String name){
 		return new Identifier("operate", name);

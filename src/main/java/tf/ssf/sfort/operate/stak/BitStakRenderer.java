@@ -11,13 +11,13 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3f;
 import tf.ssf.sfort.operate.Config;
 
-import static tf.ssf.sfort.operate.client.McClient.mc;
+import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class BitStakRenderer {
     private int step = 0;
 
     public static void register() {
-        if (Config.fancyInv == null || Config.bit == null) return;
+        if (Config.fancyInv == null || BitStakEntity.ENTITY_TYPE == null) return;
         BlockEntityRendererRegistry.register(BitStakEntity.ENTITY_TYPE, ctx -> new BitStakRenderer()::render);
     }
 

@@ -15,6 +15,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -31,9 +32,9 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
+import tf.ssf.sfort.operate.stak.cylinder.ItemCylinder;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
-import tf.ssf.sfort.operate.MainClient;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 
@@ -169,20 +170,18 @@ public class BitStak extends Block implements BlockEntityProvider{
 	}
 	@Override
 	public ActionResult onUse(BlockState blockState, World world, BlockPos blockPos, PlayerEntity player, Hand hand, BlockHitResult blockHitResult) {
-		if (!world.isClient) {
-			BlockEntity e = world.getBlockEntity(blockPos);
-			if(e instanceof BitStakEntity && !blockState.get(POWERED)) {
-				ItemStack stack = player.getStackInHand(hand);
-				if (VALID_INSNS.containsKey(stack.getItem())) {
-					((BitStakEntity)e).pushInv(stack.split(1));
+		BlockEntity e = world.getBlockEntity(blockPos);
+		if (e instanceof BitStakEntity && !blockState.get(POWERED)) {
+			ItemStack stack = player.getStackInHand(hand);
+			if (VALID_INSNS.containsKey(stack.getItem())) {
+				if (!world.isClient) {
+					((BitStakEntity) e).pushInv(stack.split(1));
 					e.markDirty();
-					return ActionResult.SUCCESS;
 				}
+				return ActionResult.SUCCESS;
 			}
-		} else if(player.getMainHandStack().isEmpty() && player.isSneaky()) {
-			MainClient.openBitStakStreen();
 		}
-		return ActionResult.CONSUME;
+		return ActionResult.PASS;
 	}
 	public BitStak(Settings settings) {super(settings);}
 	public static void register() {

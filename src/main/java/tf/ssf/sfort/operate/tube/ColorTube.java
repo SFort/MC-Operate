@@ -44,10 +44,12 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 		builder.add(ENABLED);
 	}
 
+	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return collisionShape;
 	}
 
+	@Override
 	public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return collisionShape;
 	}

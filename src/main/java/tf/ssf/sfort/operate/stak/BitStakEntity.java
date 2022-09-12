@@ -368,11 +368,31 @@ public class BitStakEntity extends BlockEntity {
             stak.putInt(Integer.toString(i), stack[i]);
         }
         tag.put("stack", stak);
-        stak = new NbtCompound();
+        tag.put("insns", getInsnsTag());
+    }
+    public void writeInsnsTag(NbtCompound tag) {
         for (int i = 0; i < instructions.size(); i++) {
-            stak.putString(Integer.toString(i), Registry.ITEM.getId(instructions.get(i)).toString());
+            tag.putString(Integer.toString(i), Registry.ITEM.getId(instructions.get(i)).toString());
         }
-        tag.put("insns", stak);
+    }
+    public NbtCompound getInsnsTag() {
+        NbtCompound tag = new NbtCompound();
+        writeInsnsTag(tag);
+        return tag;
+    }
+
+    public static void parseInsnsTag(NbtCompound tag, Consumer<Item> adder) {
+        int i = 0;
+        while (true) {
+            NbtElement nbt = tag.get(Integer.toString(i));
+            if (nbt instanceof NbtString) {
+                Item item = Registry.ITEM.get(new Identifier(nbt.asString()));
+                if (item != Items.AIR) {
+                    adder.accept(item);
+                }
+            } else break;
+            i++;
+        }
     }
 
     @Override
@@ -387,18 +407,7 @@ public class BitStakEntity extends BlockEntity {
                 stack[i] = ((NbtInt) nbt).intValue();
             }
         }
-        stak = tag.getCompound("insns");
-        int i = 0;
-        while (true) {
-            NbtElement nbt = stak.get(Integer.toString(i));
-            if (nbt instanceof NbtString) {
-                Item item = Registry.ITEM.get(new Identifier(nbt.asString()));
-                if (item != Items.AIR) {
-                    instructions.add(item);
-                }
-            } else break;
-            i++;
-        }
+        parseInsnsTag(tag.getCompound("insns"), instructions::add);
         insnPos = Math.max(0, Math.min(instructions.size() - 1, tag.getInt("stackpos")));
         markDirty();
     }
