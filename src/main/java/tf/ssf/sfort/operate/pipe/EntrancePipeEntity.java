@@ -36,7 +36,7 @@ public class EntrancePipeEntity extends AbstractPipeEntity implements SidedInven
 
 	@Override
 	public boolean isEmpty() {
-		return itemQueue.size() < 32;
+		return true;
 	}
 
 	@Override

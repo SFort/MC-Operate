@@ -11,6 +11,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
@@ -22,10 +23,10 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.tick.OrderedTick;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.util.SyncableLinkedList;
 
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor {
 	public byte connectedSides = 0;
 
-	public final LinkedList<TransportedStack> itemQueue = new LinkedList<>();
+	public final SyncableLinkedList<TransportedStack> itemQueue = new SyncableLinkedList<>();
 
 	public AbstractPipeEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -41,16 +42,40 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	@Override
 	public Packet<ClientPlayPacketListener> toUpdatePacket() {
-		return BlockEntityUpdateS2CPacket.create(
-				this,
-				b -> toInitialChunkDataNbt()
-		);
+		if (itemQueue.isSyncable()) {
+			return BlockEntityUpdateS2CPacket.create(
+					this,
+					b -> this.clientItemUpdateTag()
+			);
+		}
+		return BlockEntityUpdateS2CPacket.create(this);
 	}
-
+	public NbtCompound clientItemUpdateTag() {
+		NbtCompound tag = new NbtCompound();
+		NbtCompound items = new NbtCompound();
+		int i=0;
+		TransportedStack stack = itemQueue.popSync();
+		while (stack != null) {
+			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+			stack = itemQueue.popSync();
+		}
+		tag.put("addQ", items);
+		return tag;
+	}
+	public void clientClearTransported() {
+		if (world == null || !world.isClient || itemQueue.first==null) return;
+		TransportedStack entry = itemQueue.first.item;
+		while (entry != null && entry.travelTime <= world.getLevelProperties().getTime()) {
+			entry = itemQueue.pop();
+		}
+	}
 	@Override
 	public void markDirty() {
+		itemQueue.lockSync();
+		partialMarkDirty();
+	}
+	public void partialMarkDirty() {
 		super.markDirty();
-
 		if (world != null && !world.isClient()) {
 			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
 		}
@@ -62,8 +87,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		tag.putByte("sides", connectedSides);
 		NbtCompound items = new NbtCompound();
 		int i=0;
-		for (TransportedStack stack : itemQueue) {
-			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+		for (SyncableLinkedList.Node<TransportedStack> stack = itemQueue.first; stack != null; stack=stack.next) {
+			items.put(Integer.toString(i++), stack.item.toTag(new NbtCompound()));
 		}
 		tag.put("items", items);
 		return tag;
@@ -75,8 +100,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		tag.putByte("sides", connectedSides);
 		NbtCompound items = new NbtCompound();
 		int i=0;
-		for (TransportedStack stack : itemQueue) {
-			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+		for (SyncableLinkedList.Node<TransportedStack> stack = itemQueue.first; stack != null; stack=stack.next) {
+			items.put(Integer.toString(i++), stack.item.toTag(new NbtCompound()));
 		}
 		tag.put("items", items);
 	}
@@ -84,6 +109,26 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	@Override
 	public void readNbt(NbtCompound tag) {
 		super.readNbt(tag);
+		if (world != null && world.isClient() && readNbtClient(tag)) {
+			return;
+		}
+		readNbtCommon(tag);
+		markDirty();
+	}
+	public boolean readNbtClient(NbtCompound tag) {
+		if (tag.contains("addQ", NbtElement.COMPOUND_TYPE)) {
+			NbtCompound items = tag.getCompound("addQ");
+			int i=0;
+			while (true) {
+				NbtCompound item = items.getCompound(Integer.toString(i++));
+				if (item.isEmpty()) break;
+				itemQueue.push(new TransportedStack(item));
+			}
+			return true;
+		}
+		return false;
+	}
+	public void readNbtCommon(NbtCompound tag) {
 		connectedSides = tag.getByte("sides");
 		itemQueue.clear();
 		NbtCompound items = tag.getCompound("items");
@@ -91,9 +136,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		while (true) {
 			NbtCompound item = items.getCompound(Integer.toString(i++));
 			if (item.isEmpty()) break;
-			itemQueue.offer(new TransportedStack(item));
+			itemQueue.push(new TransportedStack(item));
 		}
-		markDirty();
 	}
 	public void wrenchSideIndirect(Direction side) {
 		wrenchSide(side);
@@ -128,7 +172,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		if (world == null) return -1;
 		if (itemQueue.isEmpty()) return -1;
 
-		TransportedStack entry = itemQueue.element();
+		TransportedStack entry = itemQueue.first.item;
 		while (entry.travelTime <= world.getLevelProperties().getTime()) {
 			transport :{
 				List<Direction> outputs = getOutputs(entry);
@@ -143,12 +187,13 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
 				world.spawnEntity(itemEntity);
 			}
-			itemQueue.poll();
-			markDirty();
+			itemQueue.progress();
+			//avoid syncing with clients
+			super.markDirty();
 			if (itemQueue.isEmpty()) {
 				return -1;
 			} else {
-				entry = itemQueue.element();
+				entry = itemQueue.first.item;
 			}
 		}
 		return entry.travelTime;
@@ -221,10 +266,10 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	public void dropInv() {
 		if (world == null) return;
 		if (itemQueue.isEmpty()) return;
-		TransportedStack entry = itemQueue.poll();
+		TransportedStack entry = itemQueue.pop();
 		while (entry != null) {
 			world.spawnEntity(new ItemEntity(world, pos.getX()+.5, pos.getY()+1, pos.getZ()+.5, entry.stack));
-			entry = itemQueue.poll();
+			entry = itemQueue.pop();
 		}
 	}
 
@@ -233,9 +278,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		if (world == null) return false;
 		stack.travelTime = world.getLevelProperties().getTime() + getPipeTransferTime();
 		stack.origin = dir;
-		itemQueue.offer(stack);
+		itemQueue.push(stack);
 		world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
-		markDirty();
+		partialMarkDirty();
 		return true;
 	}
 

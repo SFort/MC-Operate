@@ -42,10 +42,9 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 	}
 
 	@Override
-	public void readNbt(NbtCompound tag) {
-		super.readNbt(tag);
+	public void readNbtCommon(NbtCompound tag) {
+		super.readNbtCommon(tag);
 		connectedLowPrioritySides = tag.getByte("priority$lps");
-		markDirty();
 	}
 	@Override
 	public void wrenchSideIndirect(Direction side) {}

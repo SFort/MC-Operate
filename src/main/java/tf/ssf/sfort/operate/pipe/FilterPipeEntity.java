@@ -62,8 +62,8 @@ public class FilterPipeEntity extends AbstractPipeEntity {
 	}
 
 	@Override
-	public void readNbt(NbtCompound tag) {
-		super.readNbt(tag);
+	public void readNbtCommon(NbtCompound tag) {
+		super.readNbtCommon(tag);
 		NbtCompound nbt = tag.getCompound("filter$out");
 		for (int i = 0; i<filterOutSides.length; i++) {
 			filterOutSides[i] = Registry.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
@@ -72,7 +72,6 @@ public class FilterPipeEntity extends AbstractPipeEntity {
 		for (int i = 0; i<filterInSides.length; i++) {
 			filterInSides[i] = Registry.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
 		}
-		markDirty();
 	}
 	@Override
 	public List<Direction> getOutputs(TransportedStack transport){

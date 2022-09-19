@@ -14,6 +14,7 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.util.SyncableLinkedList;
 
 public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 
@@ -27,7 +28,9 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
 		World world = entity.getWorld();
 		if (world == null) return;
-		for (TransportedStack entry : entity.itemQueue) {
+		entity.clientClearTransported();
+		for (SyncableLinkedList.Node<TransportedStack> stackNode = entity.itemQueue.first; stackNode!=null; stackNode=stackNode.next) {
+			TransportedStack entry = stackNode.item;
 			matrix.push();
 			long diff = Math.min(entity.getPipeTransferTime(), entry.travelTime - world.getTime());
 			double progress = 0;

@@ -92,10 +92,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
 
     @Override
     public Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(
-                this,
-                b -> toInitialChunkDataNbt()
-        );
+        return BlockEntityUpdateS2CPacket.create(this);
     }
 
     @Override
