@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "operate:block/pipe_overseer",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "operate:block/pipe_overseer"
+    },
+    "facing=south": {
+      "model": "operate:block/pipe_overseer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "operate:block/pipe_overseer",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "operate:block/pipe_overseer",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "operate:block/pipe_overseer",
+      "x" : 90
+    }
+  }
+}

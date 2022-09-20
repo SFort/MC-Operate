@@ -40,7 +40,6 @@ public class UnloadPipe extends AbstractPipe{
 			Block.createCuboidShape(.1,4,4,12,12,12),
 			Block.createCuboidShape(4,4,.1,12,12,12),
 			Block.createCuboidShape(4,4,4,15.9,12,12)
-
 	};
 	public static final VoxelShape[] outlineShape =  new VoxelShape[]{
 			Block.createCuboidShape(4,4, 4,12,12,16),

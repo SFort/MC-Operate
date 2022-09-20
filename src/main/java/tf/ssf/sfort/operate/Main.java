@@ -11,6 +11,7 @@ import tf.ssf.sfort.operate.jolt.Jolt;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
 import tf.ssf.sfort.operate.pipe.EntrancePipe;
 import tf.ssf.sfort.operate.pipe.FilterPipe;
+import tf.ssf.sfort.operate.pipe.OverseerPipe;
 import tf.ssf.sfort.operate.pipe.PriorityPipe;
 import tf.ssf.sfort.operate.pipe.UnloadPipe;
 import tf.ssf.sfort.operate.punch.Punch;
@@ -44,6 +45,7 @@ public class Main implements ModInitializer {
 		Sounds.register();
 		ItemCylinder.register();
 		Cylinder.register();
+		OverseerPipe.register();
 	}
 	public static Identifier id(String name){
 		return new Identifier("operate", name);

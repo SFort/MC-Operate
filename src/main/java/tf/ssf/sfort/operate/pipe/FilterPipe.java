@@ -36,7 +36,7 @@ public class FilterPipe extends AbstractPipe{
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("filter_pipe"), new FilterPipe());
 		FilterPipeEntity.register();
 		if (Config.basicPipe) {
-			Spoon.INFUSE.put(new Pair<>(Items.GOLD_INGOT, BasicPipe.BLOCK), (world, pos, state, offhand, player) -> {
+			Spoon.INFUSE.put(new Pair<>(Items.GOLD_INGOT, BasicPipe.BLOCK), (world, pos, state, offhand, context) -> {
 				offhand.decrement(1);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);

@@ -23,6 +23,7 @@ public class Config {
 	public static boolean litSpoon = true;
 	public static Boolean fancyInv = false;
 	public static Boolean basicPipe = true;
+	public static Boolean advancedPipe = true;
 	public static boolean chunkLoadPipes = false;
 	public static Boolean cylinder = true;
 

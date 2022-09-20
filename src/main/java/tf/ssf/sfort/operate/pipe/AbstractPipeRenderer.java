@@ -28,7 +28,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
 		World world = entity.getWorld();
 		if (world == null) return;
-		entity.clientClearTransported();
+		final float step = 1 / (float) entity.getPipeTransferTime();
 		for (SyncableLinkedList.Node<TransportedStack> stackNode = entity.itemQueue.first; stackNode!=null; stackNode=stackNode.next) {
 			TransportedStack entry = stackNode.item;
 			matrix.push();
@@ -36,7 +36,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 			double progress = 0;
 			if (diff > 0) {
 				float divDiff = diff / (float)entity.getPipeTransferTime();
-				progress = MathHelper.lerp(tickDelta, divDiff + .1f, divDiff);
+				progress = MathHelper.lerp(tickDelta, divDiff + step, divDiff);
 			}
 			switch (entry.origin) {
 				case UP:

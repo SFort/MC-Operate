@@ -2,7 +2,10 @@ package tf.ssf.sfort.operate.pipe;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
+
+import java.util.List;
 
 public class TransportedStack {
 	public final ItemStack stack;
@@ -27,7 +30,7 @@ public class TransportedStack {
 		tag.putLong("ttime", this.travelTime);
 	}
 
-	public Direction getPreferredPath(){
+	public Direction getPreferredPath(List<Direction> outputs, BlockPos pos){
 		return null;
 	}
 

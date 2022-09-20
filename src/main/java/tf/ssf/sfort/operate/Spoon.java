@@ -58,7 +58,7 @@ public class Spoon extends Item {
 		if (offhandStack != null) {
 			SpoonDoLess infuse = INFUSE.get(new Pair<>(offhandStack.getItem(), state.getBlock()));
 			if (infuse != null) {
-				ActionResult ret = infuse.act(world, pos, state, offhandStack, player);
+				ActionResult ret = infuse.act(world, pos, state, offhandStack, context);
 				if (ret != null) return ret;
 			}
 		}
@@ -107,7 +107,7 @@ public class Spoon extends Item {
 	}
 
 	public interface SpoonDoLess{
-		ActionResult act(World world, BlockPos pos, BlockState state, ItemStack offhand, PlayerEntity player);
+		ActionResult act(World world, BlockPos pos, BlockState state, ItemStack offhand, ItemUsageContext context);
 	}
 	public interface SpoonDoLessSided{
 		ActionResult act(World world, BlockPos pos, BlockState state, ItemStack offhand, Direction side);

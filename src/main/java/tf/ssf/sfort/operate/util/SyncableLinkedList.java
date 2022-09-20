@@ -46,7 +46,7 @@ public class SyncableLinkedList<T> {
 	}
 
 	public T popSync() {
-		if (oldestRequiredSync == null) return null;
+		if (!isSyncable()) return null;
 		T ret = oldestRequiredSync.item;
 		oldestRequiredSync = oldestRequiredSync.next;
 		return ret;

@@ -62,13 +62,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		tag.put("addQ", items);
 		return tag;
 	}
-	public void clientClearTransported() {
-		if (world == null || !world.isClient || itemQueue.first==null) return;
-		TransportedStack entry = itemQueue.first.item;
-		while (entry != null && entry.travelTime <= world.getLevelProperties().getTime()) {
-			entry = itemQueue.pop();
-		}
-	}
+
 	@Override
 	public void markDirty() {
 		itemQueue.lockSync();
@@ -176,7 +170,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		while (entry.travelTime <= world.getLevelProperties().getTime()) {
 			transport :{
 				List<Direction> outputs = getOutputs(entry);
-				Direction preferredPath = entry.getPreferredPath();
+				Direction preferredPath = entry.getPreferredPath(outputs, pos);
 				if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath))
 					break transport;
 				if (transportStack(entry, outputs))

@@ -37,7 +37,7 @@ public class ItemCylinder extends Item {
 		if (Config.cylinder == null) return;
 		ITEM = Registry.register(Registry.ITEM, Main.id("bit_cylinder"), new ItemCylinder());
 		if (Config.cylinder) {
-			Spoon.INFUSE.put(new Pair<>(Items.PAPER, BitStak.BLOCK), (world, pos, state, offhand, player) -> {
+			Spoon.INFUSE.put(new Pair<>(Items.PAPER, BitStak.BLOCK), (world, pos, state, offhand, context) -> {
 				if (world.isClient || !state.isOf(BitStak.BLOCK) || state.get(BitStak.POWERED)) return null;
 				BlockEntity e = world.getBlockEntity(pos);
 				if (!(e instanceof BitStakEntity) || ((BitStakEntity) e).instructions.isEmpty()) return null;
@@ -45,6 +45,7 @@ public class ItemCylinder extends Item {
 				NbtCompound tag = bp.getOrCreateNbt();
 				tag.put("insns", ((BitStakEntity) e).getInsnsTag());
 				((BitStakEntity) e).instructions.clear();
+				PlayerEntity player = context.getPlayer();
 				if (offhand.getCount() > 1) {
 					offhand.decrement(1);
 					player.dropItem(offhand, true);
