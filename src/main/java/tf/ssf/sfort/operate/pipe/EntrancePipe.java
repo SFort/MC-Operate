@@ -23,6 +23,7 @@ import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
+import tf.ssf.sfort.operate.util.OperateUtil;
 
 public class EntrancePipe extends AbstractPipe{
 	public static Block BLOCK;
@@ -39,7 +40,7 @@ public class EntrancePipe extends AbstractPipe{
 			if (be instanceof EntrancePipeEntity) {
 				ItemStack stack = ((ItemEntity) entity).getStack();
 				Vec3d epos = entity.getPos();
-				Direction dir = Main.dirFromVec(epos.x - pos.getX(), epos.y - pos.getY(), epos.z - pos.getZ());
+				Direction dir = OperateUtil.dirFromVec(epos.x - pos.getX(), epos.y - pos.getY(), epos.z - pos.getZ());
 				if (((EntrancePipeEntity) be).acceptItemFrom(stack, dir)) entity.kill();
 				else entity.addVelocity(world.random.nextDouble() - .5, dir == Direction.UP ? .5 : 0, world.random.nextDouble() - .5);
 			}

@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.pipe;
+package tf.ssf.sfort.operate.pipe.advanced;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
@@ -26,8 +26,9 @@ import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
+import tf.ssf.sfort.operate.pipe.AbstractPipe;
 
-public class OverseerPipe extends AbstractPipe{
+public class ExchangePipe extends AbstractPipe {
 	public static Block BLOCK;
 	public static final DirectionProperty FACING = Properties.FACING;
 
@@ -40,7 +41,7 @@ public class OverseerPipe extends AbstractPipe{
 			Block.createCuboidShape(4,4,4,16,12,12)
 	};
 
-	public OverseerPipe() {
+	public ExchangePipe() {
 		super(Settings.of(Material.PISTON).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 		setDefaultState(stateManager.getDefaultState().with(FACING, Direction.NORTH));
 	}
@@ -67,22 +68,24 @@ public class OverseerPipe extends AbstractPipe{
 
 	@Override
 	public BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-		return new OverseerPipeEntity(pos, state);
+		return new ExchangePipeEntity(pos, state);
 	}
 
 	public static void register() {
 		if (Config.advancedPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("overseer_pipe"), new OverseerPipe());
-		OverseerPipeEntity.register();
+		BLOCK = Registry.register(Registry.BLOCK, Main.id("exchange_pipe"), new ExchangePipe());
+		ExchangePipeEntity.register();
 		if (Config.advancedPipe) {
-			Spoon.INFUSE.put(new Pair<>(Items.ENDER_EYE, BasicPipe.BLOCK), (world, pos, state, offhand, context) -> {
+			Spoon.INFUSE.put(new Pair<>(Items.IRON_TRAPDOOR, OverseerPipe.BLOCK), (world, pos, state, offhand, context) -> {
 				offhand.decrement(1);
+				Direction dir = state.get(OverseerPipe.FACING);
+				if (dir == null) return null;
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
 					world.playSound(null, pos, Sounds.SPOON_HIT, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
 					world.playSound(null, pos, state.getSoundGroup().getBreakSound(), SoundCategory.BLOCKS, 1, world.getRandom().nextFloat() * 0.1F + 0.9F);
 				}
-				world.setBlockState(pos, BLOCK.getDefaultState().with(FACING, context.getSide()));
+				world.setBlockState(pos, BLOCK.getDefaultState().with(FACING, dir));
 				return ActionResult.SUCCESS;
 			});
 		}

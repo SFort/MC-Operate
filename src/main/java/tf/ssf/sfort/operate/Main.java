@@ -10,9 +10,11 @@ import net.minecraft.util.math.Vec3i;
 import tf.ssf.sfort.operate.jolt.Jolt;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
 import tf.ssf.sfort.operate.pipe.EntrancePipe;
+import tf.ssf.sfort.operate.pipe.advanced.ExchangePipe;
 import tf.ssf.sfort.operate.pipe.FilterPipe;
-import tf.ssf.sfort.operate.pipe.OverseerPipe;
+import tf.ssf.sfort.operate.pipe.advanced.OverseerPipe;
 import tf.ssf.sfort.operate.pipe.PriorityPipe;
+import tf.ssf.sfort.operate.pipe.advanced.RequestPipe;
 import tf.ssf.sfort.operate.pipe.UnloadPipe;
 import tf.ssf.sfort.operate.punch.Punch;
 import tf.ssf.sfort.operate.stak.BitStak;
@@ -46,24 +48,10 @@ public class Main implements ModInitializer {
 		ItemCylinder.register();
 		Cylinder.register();
 		OverseerPipe.register();
+		ExchangePipe.register();
+		RequestPipe.register();
 	}
 	public static Identifier id(String name){
 		return new Identifier("operate", name);
-	}
-	public static Direction dirFromVec(double x, double y, double z) {
-		if (y<0) return Direction.DOWN;
-		if (y>=.75) return Direction.UP;
-		if (x<.1) return Direction.WEST;
-		if (x>=.75) return Direction.EAST;
-		if (z<.1) return Direction.NORTH;
-		return Direction.SOUTH;
-	}
-	public static Direction dirFromHorizontalVec(Vec3i vec) {
-		int x = Integer.compare(vec.getX(), 0);
-		int z = x == 0 ? vec.getZ() : 0;
-		if (x != 0 || z != 0) {
-			return Direction.fromVector(x, 0, z);
-		}
-		return null;
 	}
 }

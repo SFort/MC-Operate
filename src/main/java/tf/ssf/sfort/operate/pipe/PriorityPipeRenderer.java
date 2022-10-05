@@ -10,15 +10,15 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 
-public class PriorityPipeRenderer extends AbstractPipeRenderer<PriorityPipeEntity> {
+public class PriorityPipeRenderer<T extends PriorityPipeEntity> extends AbstractPipeRenderer<T> {
 
 	public static void register() {
 		if (Config.basicPipe == null) return;
-		BlockEntityRendererRegistry.register(PriorityPipeEntity.ENTITY_TYPE, ctx -> new PriorityPipeRenderer()::render);
+		BlockEntityRendererRegistry.register(PriorityPipeEntity.ENTITY_TYPE, ctx -> new PriorityPipeRenderer<>()::render);
 	}
 
 	@Override
-	public void renderConnections(PriorityPipeEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+	public void renderConnections(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		super.renderConnections(entity, tickDelta, matrix, vertex, light, overlay);
 		World world = entity.getWorld();
 		BlockPos.Mutable pos = entity.getPos().mutableCopy();

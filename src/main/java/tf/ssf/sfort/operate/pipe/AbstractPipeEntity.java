@@ -1,7 +1,5 @@
 package tf.ssf.sfort.operate.pipe;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -116,7 +114,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			while (true) {
 				NbtCompound item = items.getCompound(Integer.toString(i++));
 				if (item.isEmpty()) break;
-				itemQueue.push(new TransportedStack(item));
+				itemQueue.push(TransportedStack.fromNbt(item));
 			}
 			return true;
 		}
@@ -130,7 +128,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		while (true) {
 			NbtCompound item = items.getCompound(Integer.toString(i++));
 			if (item.isEmpty()) break;
-			itemQueue.push(new TransportedStack(item));
+			itemQueue.push(TransportedStack.fromNbt(item));
 		}
 	}
 	public void wrenchSideIndirect(Direction side) {
@@ -175,11 +173,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 					break transport;
 				if (transportStack(entry, outputs))
 					break transport;
-
-				Vec3i dropDir = entry.origin.getOpposite().getVector();
-				ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
-				itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
-				world.spawnEntity(itemEntity);
+				dropTransportedStack(entry);
 			}
 			itemQueue.progress();
 			//avoid syncing with clients
@@ -191,6 +185,12 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			}
 		}
 		return entry.travelTime;
+	}
+	public void dropTransportedStack(TransportedStack stack) {
+		Vec3i dropDir = stack.origin.getOpposite().getVector();
+		ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), stack.stack);
+		itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
+		world.spawnEntity(itemEntity);
 	}
 	public boolean transportStack(TransportedStack entry, List<Direction> sides) {
 		for (Direction dir : sides) {
@@ -278,9 +278,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		return true;
 	}
 
-	@Environment(EnvType.CLIENT)
-	public AbstractPipeRenderer.DisconnectedSideLinesRenderer getDisconnectedSideLinesRenderer(Direction dir) {
-		return (connectedSides & (1 << dir.ordinal())) == 0 ? AbstractPipeRenderer::drawDisconnectedSideLines : null;
+	public boolean isConnected(Direction dir) {
+		return (connectedSides & (1 << dir.ordinal())) != 0;
 	}
 	public int getPipeTransferTime() {
 		return 10;

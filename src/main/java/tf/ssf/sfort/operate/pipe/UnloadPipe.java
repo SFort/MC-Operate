@@ -30,6 +30,7 @@ import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
+import tf.ssf.sfort.operate.util.OperateUtil;
 
 public class UnloadPipe extends AbstractPipe{
 	public static Block BLOCK;
@@ -57,7 +58,7 @@ public class UnloadPipe extends AbstractPipe{
 		if (entity instanceof Inventory && entity.isAlive()) {
 			Direction dir = state.get(FACING);
 			{
-				if (dir != Main.dirFromHorizontalVec(entity.getBlockPos().subtract(pos)))
+				if (dir != OperateUtil.dirFromHorizontalVec(entity.getBlockPos().subtract(pos)))
 					return;
 			}
 			BlockEntity be = world.getBlockEntity(pos);
@@ -117,7 +118,7 @@ public class UnloadPipe extends AbstractPipe{
 		UnloadPipeEntity.register();
 		if (Config.basicPipe) {
 			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
-				Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
+				Direction dir = OperateUtil.dirFromHorizontalVec(pos.subtract(cpos));
 				if (dir == null) return false;
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {

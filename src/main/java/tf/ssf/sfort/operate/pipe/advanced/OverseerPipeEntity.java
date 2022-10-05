@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.pipe;
+package tf.ssf.sfort.operate.pipe.advanced;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
@@ -7,8 +7,9 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.pipe.AbstractPipeEntity;
 
-public class OverseerPipeEntity extends AbstractPipeEntity{
+public class OverseerPipeEntity extends AbstractPipeEntity {
 	public static BlockEntityType<OverseerPipeEntity> ENTITY_TYPE;
 
 	public OverseerPipeEntity(BlockPos blockPos, BlockState state) {

@@ -73,10 +73,9 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 	}
 
 	@Override
-	@Environment(EnvType.CLIENT)
-	public AbstractPipeRenderer.DisconnectedSideLinesRenderer getDisconnectedSideLinesRenderer(Direction dir) {
+	public boolean isConnected(Direction dir) {
 		int mask = 1 << dir.ordinal();
-		return (connectedSides & mask) == 0 && (connectedLowPrioritySides & mask) == 0 ? AbstractPipeRenderer::drawDisconnectedSideLines : null;
+		return (connectedSides & mask) != 0 || (connectedLowPrioritySides & mask) != 0;
 	}
 	@Override
 	public Block asBlock() {

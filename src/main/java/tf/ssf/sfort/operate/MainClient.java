@@ -5,9 +5,11 @@ import net.minecraft.client.MinecraftClient;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.ExchangePipeRenderer;
 import tf.ssf.sfort.operate.pipe.FilterPipeRenderer;
-import tf.ssf.sfort.operate.pipe.OverseerPipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.OverseerPipeRenderer;
 import tf.ssf.sfort.operate.pipe.PriorityPipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.RequestPipeRenderer;
 import tf.ssf.sfort.operate.pipe.UnloadPipeRenderer;
 import tf.ssf.sfort.operate.punch.PunchRenderer;
 import tf.ssf.sfort.operate.stak.cylinder.CylinderRenderer;
@@ -29,6 +31,8 @@ public class MainClient implements ClientModInitializer {
 		FilterPipeRenderer.register();
 		CylinderRenderer.register();
 		OverseerPipeRenderer.register();
+		ExchangePipeRenderer.register();
+		RequestPipeRenderer.register();
 		//BitStakRenderer.register();
 	}
 }

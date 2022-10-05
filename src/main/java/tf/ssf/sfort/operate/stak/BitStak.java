@@ -15,7 +15,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
 import net.minecraft.server.world.ServerWorld;
@@ -32,11 +31,11 @@ import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
-import tf.ssf.sfort.operate.stak.cylinder.ItemCylinder;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
+import tf.ssf.sfort.operate.util.OperateUtil;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -190,7 +189,7 @@ public class BitStak extends Block implements BlockEntityProvider{
 			BitStakEntity.register();
 			if (Config.bit){
 				Spoon.SpoonDo craft = (world, pos, cpos, state, cstate) -> {
-					Direction dir = Main.dirFromHorizontalVec(pos.subtract(cpos));
+					Direction dir = OperateUtil.dirFromHorizontalVec(pos.subtract(cpos));
 					if (dir == null) return false;
 					world.removeBlock(pos, false);
 					if (world instanceof ServerWorld) {

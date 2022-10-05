@@ -152,4 +152,8 @@ public class ColorTubeEntity extends BlockEntity {
             world.updateNeighbor(pos.offset(Direction.values()[i]), ColorTube.BLOCK, pos);
         }
     }
+
+    public boolean hasAllColorConnection(Direction dir) {
+        return sides[dir.ordinal()] == TubeConnectTypes.ALL;
+    }
 }

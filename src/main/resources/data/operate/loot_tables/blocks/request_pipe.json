@@ -1,0 +1,14 @@
+{
+	"type":"minecraft:block",
+	"pools":[
+		{
+			"rolls":8,
+			"entries":[
+				{
+				"type":"minecraft:item",
+				"name":"minecraft:echo_shard"
+				}
+			]
+		}
+	]
+}
