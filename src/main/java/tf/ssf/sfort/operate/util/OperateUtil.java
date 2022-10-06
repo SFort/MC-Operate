@@ -13,18 +13,33 @@ import java.util.function.BiPredicate;
 
 public class OperateUtil {
 	public static<T extends BlockEntity> LinkedHashSet<T> getConnecting(World world, BlockPos pos, Class<T> clazz, BiPredicate<T, Direction> isConnected) {
-		assert world != null;
 		LinkedHashSet<T> entities = new LinkedHashSet<>();
 		List<T> reader = new ArrayList<>();
-		List<T> writer = new ArrayList<>();
 		BlockPos.Mutable mut = pos.mutableCopy();
 		for (Direction dir : Direction.values()) {
 			BlockEntity e = world.getBlockEntity(mut.set(pos).move(dir));
-			if (clazz.isInstance(e) && isConnected.test((T)e, dir)) {
+			if (clazz.isInstance(e) && isConnected.test((T)e, dir.getOpposite())) {
 				reader.add((T)e);
 				entities.add((T)e);
 			}
 		}
+		return getConnecting(world, clazz, isConnected, entities, reader, new ArrayList<>(), mut);
+	}
+	public static<T extends BlockEntity> LinkedHashSet<T> getConnecting(World world, BlockPos pos, Class<T> clazz, BiPredicate<T, Direction> isConnected, T self) {
+		LinkedHashSet<T> entities = new LinkedHashSet<>();
+		List<T> reader = new ArrayList<>();
+		BlockPos.Mutable mut = pos.mutableCopy();
+		for (Direction dir : Direction.values()) {
+			if (self != null && !isConnected.test(self, dir)) continue;
+			BlockEntity e = world.getBlockEntity(mut.set(pos).move(dir));
+			if (clazz.isInstance(e) && isConnected.test((T)e, dir.getOpposite())) {
+				reader.add((T)e);
+				entities.add((T)e);
+			}
+		}
+		return getConnecting(world, clazz, isConnected, entities, reader, new ArrayList<>(), mut);
+	}
+	public static<T extends BlockEntity> LinkedHashSet<T> getConnecting(World world, Class<T> clazz, BiPredicate<T, Direction> isConnected, LinkedHashSet<T> entities, List<T> reader, List<T> writer, BlockPos.Mutable mut) {
 		do {
 			for (T e : reader) {
 				for (Direction dir : Direction.values()) {

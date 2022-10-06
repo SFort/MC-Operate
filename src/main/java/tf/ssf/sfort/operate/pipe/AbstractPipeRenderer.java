@@ -7,6 +7,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -49,6 +50,8 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 					BlockEntity nentity = world.getBlockEntity(pos);
 					if (nentity instanceof AbstractPipeEntity) {
 						renderDisconnects((AbstractPipeEntity) nentity, tickDelta, matrix, vertex, light, overlay, dir.getOpposite());
+					} else if (nentity instanceof Inventory) {
+						drawDisconnectedSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .8f);
 					}
 				}
 			}
