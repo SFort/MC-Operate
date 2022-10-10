@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor {
+public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor, DroppingItemPipeAcceptor {
 	public byte connectedSides = 0;
 
 	public final SyncableLinkedList<TransportedStack> itemQueue = new SyncableLinkedList<>();
@@ -54,7 +54,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		int i=0;
 		TransportedStack stack = itemQueue.popSync();
 		while (stack != null) {
-			items.put(Integer.toString(i++), stack.toTag(new NbtCompound()));
+			items.put(Integer.toString(i++), stack.toClientTag(new NbtCompound()));
 			stack = itemQueue.popSync();
 		}
 		tag.put("addQ", items);
@@ -80,7 +80,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		NbtCompound items = new NbtCompound();
 		int i=0;
 		for (SyncableLinkedList.Node<TransportedStack> stack = itemQueue.first; stack != null; stack=stack.next) {
-			items.put(Integer.toString(i++), stack.item.toTag(new NbtCompound()));
+			items.put(Integer.toString(i++), stack.item.toClientTag(new NbtCompound()));
 		}
 		tag.put("items", items);
 		return tag;
@@ -116,8 +116,10 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				if (item.isEmpty()) break;
 				itemQueue.push(TransportedStack.fromNbt(item));
 			}
+			itemQueue.oldestRequiredSync = null;
 			return true;
 		}
+		itemQueue.oldestRequiredSync = null;
 		return false;
 	}
 	public void readNbtCommon(NbtCompound tag) {
@@ -276,6 +278,12 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
 		partialMarkDirty();
 		return true;
+	}
+	@Override
+	public void alwaysAcceptItemFrom(TransportedStack stack, Direction dir){
+		if (!acceptItemFrom(stack, dir)) {
+			dropTransportedStack(stack);
+		}
 	}
 
 	public boolean isConnected(Direction dir) {

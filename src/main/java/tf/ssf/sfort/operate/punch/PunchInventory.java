@@ -40,13 +40,13 @@ public class PunchInventory extends CraftingInventory {
     public NbtCompound writeNbt(NbtCompound tag) {
         for (int i = 0; i < size(); i++)
             if (!inv[i].isEmpty())
-                tag.put(String.valueOf(i), inv[i].writeNbt(new NbtCompound()));
+                tag.put(Integer.toString(i), inv[i].writeNbt(new NbtCompound()));
         return tag;
     }
 
     public void readNbt(NbtCompound tag) {
         for (int i = 0; i < size(); i++) {
-            final String si = String.valueOf(i);
+            final String si = Integer.toString(i);
             if (tag.contains(si)) {
                 inv[i] = ItemStack.fromNbt(tag.getCompound(si));
             } else if (!inv[i].isEmpty()) {

@@ -27,7 +27,14 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		final float step = 1 / (float) entity.getPipeTransferTime();
 		matrix.push();
 		for (SyncableLinkedList.Node<TransportedStack> stackNode = entity.itemQueue.first; stackNode!=null; stackNode=stackNode.next) {
-			stackNode.item.render(entity.getPipeTransferTime(), step, world, ir, tickDelta, matrix, vertex, light, overlay);
+			int pipeTransferTime = entity.getPipeTransferTime();
+			long diff = Math.min(pipeTransferTime, stackNode.item.travelTime - world.getTime());
+			double progress = 0;
+			if (diff > 0) {
+				float divDiff = diff / (float)pipeTransferTime;
+				progress = MathHelper.lerp(tickDelta, divDiff + step, divDiff);
+			} else while (entity.itemQueue.pop() != stackNode.item && !entity.itemQueue.isEmpty());
+			stackNode.item.render(progress, world, ir, tickDelta, matrix, vertex, light, overlay);
 		}
 		matrix.pop();
 	}

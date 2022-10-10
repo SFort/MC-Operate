@@ -10,7 +10,6 @@ public class SyncableLinkedList<T> {
 		oldestRequiredSync = null;
 		while(first != null) {
 			last = first.next;
-			first.clear();
 			first = last;
 		}
 	}
@@ -35,9 +34,7 @@ public class SyncableLinkedList<T> {
 		if (first == oldestRequiredSync){
 			oldestRequiredSync = first.next;
 		}
-		Node<T> next = first.next;
-		first.clear();
-		first = next;
+		first = first.next;
 		if (first == null) last = null;
 	}
 
@@ -65,10 +62,6 @@ public class SyncableLinkedList<T> {
 
 		Node(T element) {
 			this.item = element;
-		}
-		public void clear() {
-			item = null;
-			next = null;
 		}
 	}
 }

@@ -5,6 +5,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.pipe.advanced.util.PipePathing;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -48,6 +49,44 @@ public class OperateUtil {
 						if (clazz.isInstance(neighbour) && isConnected.test((T)neighbour, dir.getOpposite())) {
 							if (entities.add((T)neighbour)) {
 								writer.add((T)neighbour);
+							}
+						}
+					}
+				}
+			}
+			reader.clear();
+			List<T> swp = reader;
+			reader = writer;
+			writer = swp;
+		} while (!reader.isEmpty());
+		return entities;
+	}
+
+	public static<T extends BlockEntity> LinkedHashSet<T> getConnectingPath(World world, BlockPos pos, Class<T> clazz, BiPredicate<T, Direction> isConnected, T self, PipePathing.Builder pathing) {
+		LinkedHashSet<T> entities = new LinkedHashSet<>();
+		List<T> reader = new ArrayList<>();
+		BlockPos.Mutable mut = pos.mutableCopy();
+		for (Direction dir : Direction.values()) {
+			if (self != null && !isConnected.test(self, dir)) continue;
+			BlockEntity e = world.getBlockEntity(mut.set(pos).move(dir));
+			if (clazz.isInstance(e) && isConnected.test((T)e, dir.getOpposite())) {
+				reader.add((T)e);
+				entities.add((T)e);
+				pathing.init(e.getPos(), dir.getOpposite());
+			}
+		}
+		return getConnectingPath(world, clazz, isConnected, entities, reader, new ArrayList<>(), mut, pathing);
+	}
+	public static<T extends BlockEntity> LinkedHashSet<T> getConnectingPath(World world, Class<T> clazz, BiPredicate<T, Direction> isConnected, LinkedHashSet<T> entities, List<T> reader, List<T> writer, BlockPos.Mutable mut, PipePathing.Builder pathing) {
+		do {
+			for (T e : reader) {
+				for (Direction dir : Direction.values()) {
+					if (isConnected.test(e, dir)) {
+						BlockEntity neighbour = world.getBlockEntity(mut.set(e.getPos()).move(dir));
+						if (clazz.isInstance(neighbour) && isConnected.test((T)neighbour, dir.getOpposite())) {
+							if (entities.add((T)neighbour)) {
+								writer.add((T)neighbour);
+								pathing.attach(e.getPos(), neighbour.getPos(), dir.getOpposite());
 							}
 						}
 					}

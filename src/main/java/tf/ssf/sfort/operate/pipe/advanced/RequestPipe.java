@@ -42,6 +42,14 @@ public class RequestPipe extends AbstractPipe {
 		if (world.isClient) {
 			return ActionResult.SUCCESS;
 		}
+		BlockEntity be = world.getBlockEntity(pos);
+		if (be instanceof RequestPipeEntity) {
+			if (((RequestPipeEntity) be).isBusy()) return ActionResult.CONSUME;
+			((RequestPipeEntity) be).reloadCache();
+			if (player.getStackInHand(hand).isOf(Items.LAVA_BUCKET)) {
+				((RequestPipeEntity) be).requestAll();
+			}
+		}
 		return ActionResult.CONSUME;
 	}
 

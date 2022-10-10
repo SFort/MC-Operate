@@ -22,6 +22,9 @@ import java.util.function.Function;
 public class TransportedStack {
 	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
 	public static final Map<String, Function<NbtCompound, TransportedStack>> superNbtConstructors = new HashMap<>();
+	static {
+		superNbtConstructors.put("guided", GuidedTransportedStack::new);
+	}
 
 	public static TransportedStack fromNbt(NbtCompound tag) {
 		if (tag.contains("super", NbtElement.STRING_TYPE)) {
@@ -56,6 +59,12 @@ public class TransportedStack {
 		tag.putLong("ttime", this.travelTime);
 	}
 
+	public void writeClientTag(NbtCompound tag) {
+		tag.put("stack", this.stack.writeNbt(new NbtCompound()));
+		tag.putInt("origin", this.origin.ordinal());
+		tag.putLong("ttime", this.travelTime);
+	}
+
 	public Direction getPreferredPath(List<Direction> outputs, BlockPos pos){
 		return null;
 	}
@@ -65,14 +74,13 @@ public class TransportedStack {
 		return tag;
 	}
 
-	public void render(int pipeTransferTime, float pipeTransferStep, World world, ItemRenderer ir, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
+	public NbtCompound toClientTag(NbtCompound tag) {
+		writeClientTag(tag);
+		return tag;
+	}
+
+	public void render(double progress, World world, ItemRenderer ir, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
-		long diff = Math.min(pipeTransferTime, this.travelTime - world.getTime());
-		double progress = 0;
-		if (diff > 0) {
-			float divDiff = diff / (float)pipeTransferTime;
-			progress = MathHelper.lerp(tickDelta, divDiff + pipeTransferStep, divDiff);
-		}
 		switch (this.origin) {
 			case UP:
 				matrix.translate(.5, .5 + progress, .37);
