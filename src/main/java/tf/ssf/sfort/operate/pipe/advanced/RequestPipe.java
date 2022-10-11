@@ -4,9 +4,12 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
+import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
@@ -16,7 +19,12 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.Registry;
+import net.minecraft.util.shape.VoxelShape;
+import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
@@ -28,6 +36,13 @@ import tf.ssf.sfort.operate.pipe.BasicPipe;
 public class RequestPipe extends AbstractPipe {
 	public static Block BLOCK;
 
+	public static VoxelShape[] panelOutlineShapes = new VoxelShape[] {
+			VoxelShapes.union(Block.createCuboidShape(0, 0, 0, 16, 16, .1), AbstractPipe.collisionShape),
+			VoxelShapes.union(Block.createCuboidShape(15.9, 0, 0, 16, 16, 16), AbstractPipe.collisionShape),
+			VoxelShapes.union(Block.createCuboidShape(0, 0, 15.9, 16, 16, 16), AbstractPipe.collisionShape),
+			VoxelShapes.union(Block.createCuboidShape(0, 0, 0, .1, 16, 16), AbstractPipe.collisionShape)
+	};
+
 	public RequestPipe() {
 		super(Settings.of(Material.PISTON).strength(1.5F));
 	}
@@ -38,6 +53,17 @@ public class RequestPipe extends AbstractPipe {
 	}
 
 	@Override
+	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+		BlockEntity be = world.getBlockEntity(pos);
+		if (be instanceof RequestPipeEntity && ((RequestPipeEntity) be).rpui != null) {
+			PlayerEntity pe =MinecraftClient.getInstance().player;
+			if (pe != null)
+				return panelOutlineShapes[pe.getHorizontalFacing().getHorizontal()];
+		}
+		return super.getOutlineShape(state, world, pos, context);
+	}
+
+	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.isClient) {
 			return ActionResult.SUCCESS;
@@ -45,9 +71,23 @@ public class RequestPipe extends AbstractPipe {
 		BlockEntity be = world.getBlockEntity(pos);
 		if (be instanceof RequestPipeEntity) {
 			if (((RequestPipeEntity) be).isBusy()) return ActionResult.CONSUME;
-			((RequestPipeEntity) be).reloadCache();
-			if (player.getStackInHand(hand).isOf(Items.LAVA_BUCKET)) {
+			ItemStack stack = player.getStackInHand(hand);
+			if (stack.isOf(Items.LAVA_BUCKET)) {
+				stack.decrement(1);
+				player.giveItemStack(Items.BUCKET.getDefaultStack());
 				((RequestPipeEntity) be).requestAll();
+			} else if (stack.isEmpty()) {
+				Vec3d hitPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
+				Direction hitDir = hit.getSide();
+				((RequestPipeEntity) be).playerInteraction(
+						switch (hitDir) {
+							case DOWN, UP -> 0;
+							case NORTH -> hitPos.x;
+							case SOUTH -> 1-hitPos.x;
+							case WEST -> 1-hitPos.z;
+							case EAST -> hitPos.z;
+						}
+						, hitPos.y, player.getHorizontalFacing().getOpposite() == hitDir);
 			}
 		}
 		return ActionResult.CONSUME;

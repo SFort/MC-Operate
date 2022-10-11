@@ -33,7 +33,10 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 			if (diff > 0) {
 				float divDiff = diff / (float)pipeTransferTime;
 				progress = MathHelper.lerp(tickDelta, divDiff + step, divDiff);
-			} else while (entity.itemQueue.pop() != stackNode.item && !entity.itemQueue.isEmpty());
+			} else {
+				entity.itemQueue.first = stackNode.next;
+				if (entity.itemQueue.first == null) entity.itemQueue.last = null;
+			}
 			stackNode.item.render(progress, world, ir, tickDelta, matrix, vertex, light, overlay);
 		}
 		matrix.pop();

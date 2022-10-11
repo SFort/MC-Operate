@@ -13,46 +13,37 @@ import java.lang.ref.WeakReference;
 import java.util.function.Predicate;
 
 public class RequestPipeCache {
-	public Entry first;
-	public Entry last;
+	public InvNode first;
+	public InvNode last;
 	public ImmutableMap<BlockPos, PipePathing.Entry> pathing;
 
-	public int firstEntry(World world, Predicate<Entry> scanner) {
-		Entry entry = first;
-		Entry prev = null;
-		int dirty = 0;
-		while (entry != null) {
-			if (entry.pos == null) {
-				dirty = 1;
-				entry = remove(entry, prev);
+	public boolean firstEntry(World world, Predicate<InvNode> scanner) {
+		InvNode invNode = first;
+		InvNode prev = null;
+		while (invNode != null) {
+			if (invNode.pos == null) {
+				invNode = remove(invNode, prev);
 				continue;
 			}
-			if (entry.dir == null) {
-				dirty = 1;
-				BlockState state = world.getBlockState(entry.pos);
-				if (state.isOf(OverseerPipe.BLOCK)) {
-					entry.dir = state.get(OverseerPipe.FACING);
-				} else {
-					entry = remove(entry, prev);
+			if (invNode.dir == null) {
+				invNode.updateFacing(world);
+				if (invNode.dir == null) {
+					invNode = remove(invNode, prev);
 					continue;
 				}
 			}
-			if (entry.getInv() != null && scanner.test(entry)) {
-				return dirty;
+			if (invNode.getInv() != null || invNode.updateInv(world)) {
+				if (scanner.test(invNode)) return false;
 			}
-			BlockEntity be = world.getBlockEntity(entry.getTargeting());
-			if (be instanceof Inventory) {
-				entry.inv = new WeakReference<>((Inventory)be);
-				if (scanner.test(entry)) return dirty;
-			}
-			prev = entry;
-			entry = entry.next;
+			prev = invNode;
+			invNode = invNode.next;
 		}
-		return 2 | dirty;
+		return true;
 	}
-	public Entry remove(Entry entry, Entry previous) {
-		if (entry == null) return null;
-		if (entry == first){
+
+	public InvNode remove(InvNode invNode, InvNode previous) {
+		if (invNode == null) return null;
+		if (invNode == first){
 			first = first.next;
 			if (first == null) {
 				last = null;
@@ -60,13 +51,13 @@ public class RequestPipeCache {
 			return first;
 		}
 		if (previous == null) return null;
-		if (entry == last) {
+		if (invNode == last) {
 			previous.next = null;
 			last = previous;
 			return last;
 		}
-		previous.next = entry.next;
-		return entry.next;
+		previous.next = invNode.next;
+		return invNode.next;
 	}
 	public void push(BlockPos pos) {
 		push(pos, null);
@@ -74,17 +65,17 @@ public class RequestPipeCache {
 	public void push(BlockPos pos, Direction dir) {
 		if (pos == null) return;
 		if (last != null) {
-			last.next = new Entry(pos, dir);
+			last.next = new InvNode(pos, dir);
 			last = last.next;
-		} else first = last = new Entry(pos, dir);
+		} else first = last = new InvNode(pos, dir);
 	}
 
-	public static class Entry {
+	public static class InvNode {
 		public final BlockPos pos;
 		public Direction dir;
 		public WeakReference<Inventory> inv;
-		public Entry next = null;
-		public Entry(BlockPos pos, Direction dir) {
+		public InvNode next = null;
+		public InvNode(BlockPos pos, Direction dir) {
 			this.pos = pos;
 			this.dir = dir;
 		}
@@ -94,6 +85,29 @@ public class RequestPipeCache {
 		public Inventory getInv() {
 			if (inv == null) return null;
 			return inv.get();
+		}
+		public void updateFacing(World world) {
+			BlockState state = world.getBlockState(pos);
+			if (state.isOf(OverseerPipe.BLOCK)) {
+				dir = state.get(OverseerPipe.FACING);
+			}
+		}
+		public boolean updateInv(World world) {
+			BlockEntity be = world.getBlockEntity(getTargeting());
+			if (be instanceof Inventory) {
+				inv = new WeakReference<>((Inventory)be);
+				return true;
+			}
+			return false;
+		}
+		public Inventory getInv(World world) {
+			if (dir == null) {
+				updateFacing(world);
+			}
+			if (getInv() != null || updateInv(world)) {
+					return getInv();
+			}
+			return null;
 		}
 	}
 

@@ -20,16 +20,17 @@ public class GuidedTransportedStack extends TransportedStack {
 		super(stack, dir, i);
 		this.path = path;
 	}
-	@Override
+
+	/*@Override
 	public void writeClientTag(NbtCompound tag) {
 		super.writeClientTag(tag);
-		/*tag.putString("super", "guided");
+		tag.putString("super", "guided");
 		if (path != PipePathing.NULL && path.first != null) {
 			NbtCompound pathTag = new NbtCompound();
 			pathTag.putByte("0", (byte) path.first.direction.getId());
 			tag.put("guided", pathTag);
-		}*/
-	}
+		}
+	}*/
 
 	@Override
 	public void writeTag(NbtCompound tag) {

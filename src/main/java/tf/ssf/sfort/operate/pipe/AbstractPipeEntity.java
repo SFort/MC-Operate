@@ -66,6 +66,15 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		itemQueue.lockSync();
 		partialMarkDirty();
 	}
+	public void markDirtyClient() {
+		itemQueue.lockSync();
+		if (world != null && !world.isClient()) {
+			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+		}
+	}
+	public void markDirtyServer() {
+		super.markDirty();
+	}
 	public void partialMarkDirty() {
 		super.markDirty();
 		if (world != null && !world.isClient()) {
