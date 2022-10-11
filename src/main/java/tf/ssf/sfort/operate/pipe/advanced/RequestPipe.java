@@ -6,7 +6,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -28,6 +27,7 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.MainClient;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 import tf.ssf.sfort.operate.pipe.AbstractPipe;
@@ -56,9 +56,9 @@ public class RequestPipe extends AbstractPipe {
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		BlockEntity be = world.getBlockEntity(pos);
 		if (be instanceof RequestPipeEntity && ((RequestPipeEntity) be).rpui != null) {
-			PlayerEntity pe =MinecraftClient.getInstance().player;
-			if (pe != null)
-				return panelOutlineShapes[pe.getHorizontalFacing().getHorizontal()];
+			int fac = MainClient.getHorizontalPlayerFacing();
+			if (fac != -1)
+				return panelOutlineShapes[fac];
 		}
 		return super.getOutlineShape(state, world, pos, context);
 	}

@@ -1,5 +1,5 @@
 {
   "variants": {
-    "": {"model": "operate:block/pipe_entrance"}
+    "": {"model": "operate:block/pipe_request"}
   }
 }

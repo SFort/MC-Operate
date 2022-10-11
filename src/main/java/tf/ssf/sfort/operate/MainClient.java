@@ -2,6 +2,7 @@ package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.entity.player.PlayerEntity;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
@@ -34,5 +35,11 @@ public class MainClient implements ClientModInitializer {
 		ExchangePipeRenderer.register();
 		RequestPipeRenderer.register();
 		//BitStakRenderer.register();
+	}
+	public static int getHorizontalPlayerFacing() {
+		PlayerEntity pe =MinecraftClient.getInstance().player;
+		if (pe != null)
+			return pe.getHorizontalFacing().getHorizontal();
+		return -1;
 	}
 }
