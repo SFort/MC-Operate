@@ -66,6 +66,7 @@ public class RequestPipe extends AbstractPipe {
 	@Override
 	public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
 		if (world.isClient) {
+			MainClient.requestPipeKeyboardHack();
 			return ActionResult.SUCCESS;
 		}
 		BlockEntity be = world.getBlockEntity(pos);

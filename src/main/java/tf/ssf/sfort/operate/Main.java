@@ -26,6 +26,7 @@ import tf.ssf.sfort.operate.tube.ColorTube;
 public class Main implements ModInitializer {
 	public static final DirectionProperty HORIZONTAL_FACING = DirectionProperty.of("facing", (facing) -> facing != Direction.UP && facing != Direction.DOWN);
 	public static final ChunkTicketType<BlockPos> PIPE_TICKET_TYPE = ChunkTicketType.create("portal", Vec3i::compareTo, 60);
+	public static final Identifier reqPacket = Main.id("req_packet");
 
 
 	@Override

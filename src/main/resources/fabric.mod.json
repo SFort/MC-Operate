@@ -23,6 +23,9 @@
       "tf.ssf.sfort.operate.MainClient"
     ]
   },
+  "mixins": [
+    "operate.mixins.json"
+  ],
   "depends": {
     "fabricloader": "*",
     "fabric-rendering-v1": "*",

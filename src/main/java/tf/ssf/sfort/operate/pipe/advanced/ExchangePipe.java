@@ -75,7 +75,8 @@ public class ExchangePipe extends AbstractPipe {
 		if (Config.advancedPipe == null) return;
 		BLOCK = Registry.register(Registry.BLOCK, Main.id("exchange_pipe"), new ExchangePipe());
 		ExchangePipeEntity.register();
-		if (Config.advancedPipe) {
+		//TODO
+		if (Config.advancedPipe && false) {
 			Spoon.INFUSE.put(new Pair<>(Items.IRON_TRAPDOOR, OverseerPipe.BLOCK), (world, pos, state, offhand, context) -> {
 				offhand.decrement(1);
 				Direction dir = state.get(OverseerPipe.FACING);

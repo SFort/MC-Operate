@@ -12,7 +12,10 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import tf.ssf.sfort.operate.MainClient;
 import tf.ssf.sfort.operate.util.SyncableLinkedList;
+
+import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 
@@ -21,7 +24,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		renderItems(entity, tickDelta, matrix, vertex, light, overlay);
 	}
 	public void renderItems(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
-		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
+		ItemRenderer ir = mc.getItemRenderer();
 		World world = entity.getWorld();
 		if (world == null) return;
 		final float step = 1 / (float) entity.getPipeTransferTime();

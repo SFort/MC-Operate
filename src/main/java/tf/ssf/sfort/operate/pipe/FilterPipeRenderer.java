@@ -13,6 +13,8 @@ import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 
+import static tf.ssf.sfort.operate.MainClient.mc;
+
 public class FilterPipeRenderer<T extends FilterPipeEntity> extends AbstractPipeRenderer<T> {
 	public static final Quaternion Y_ROTATION = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
 	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
@@ -25,7 +27,7 @@ public class FilterPipeRenderer<T extends FilterPipeEntity> extends AbstractPipe
 	@Override
 	public void render(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		super.render(entity, tickDelta, matrix, vertex, light, overlay);
-		ItemRenderer ir = MinecraftClient.getInstance().getItemRenderer();
+		ItemRenderer ir = mc.getItemRenderer();
 		matrix.push();
 		matrix.scale(.5f, .5f, .5f);
 		World world = entity.getWorld();

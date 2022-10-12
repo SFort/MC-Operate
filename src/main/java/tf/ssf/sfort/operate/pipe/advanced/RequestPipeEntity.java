@@ -112,6 +112,11 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 				if (requestQue.test(stack)){
 					stack = inv.removeStack(i);
 					if (requestQue.subtract(stack.getCount())) {
+						if (requestQue.count < 0) {
+							ItemStack leave = stack.split(-requestQue.count);
+							inv.setStack(i, leave);
+							if (inv.getStack(i).isEmpty()) stack.setCount(stack.getCount()+-requestQue.count);
+						}
 						requestQue = requestQue.next;
 						markDirtyServer();
 					}
@@ -131,14 +136,13 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 	}
 
 	public void playerInteraction(double x, double y, boolean correctSide) {
+		markDirtyClient();
 		if (rpui == null) {
 			reloadCache();
 			rpui = new RequestPipeUi(world, cache);
-			markDirtyClient();
 			return;
 		}
 		if (correctSide) {
-			markDirtyClient();
 			world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.BLOCK_STONE_BUTTON_CLICK_OFF, SoundCategory.PLAYERS, .5f, .6f+world.random.nextFloat()*.2f);
 			if (rpui.playerClickedSlot(((int)Math.floor(x*5)) + ((int)Math.floor(y*5))*5)) return;
 			RequestPipeRequest req = rpui.generateRequests();
@@ -150,7 +154,6 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 		}
 		rpui = null;
 		cache = null;
-		markDirtyClient();
 	}
 
 	public boolean isBusy() {
@@ -163,4 +166,17 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 		return RequestPipe.BLOCK;
 	}
 
+	public void playerClearFilter() {
+		if (rpui != null){
+			rpui.clearFilter();
+			markDirtyClient();
+		}
+	}
+
+	public void playerType(char c) {
+		if (rpui != null){
+			rpui.addFilter(c);
+			markDirtyClient();
+		}
+	}
 }

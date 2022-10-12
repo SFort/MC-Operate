@@ -1,0 +1,16 @@
+
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "tf.ssf.sfort.operate.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "MixinServerPlayNetworkHandler"
+  ],
+  "client": [
+    "MixinKeyboard"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

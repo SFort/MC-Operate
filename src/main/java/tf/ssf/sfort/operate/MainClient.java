@@ -2,7 +2,9 @@ package tf.ssf.sfort.operate;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.entity.player.PlayerEntity;
+import tf.ssf.sfort.operate.client.FakeRequestScreen;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
@@ -19,6 +21,18 @@ import tf.ssf.sfort.operate.tube.ColorTubeRenderer;
 
 public class MainClient implements ClientModInitializer {
 	public static final MinecraftClient mc = MinecraftClient.getInstance();
+	public static FakeRequestScreen requestScreen = null;
+
+	public static void requestPipeKeyboardHack() {
+		requestScreen = new FakeRequestScreen().getSelf();
+		if (requestScreen != null) requestScreen.init(mc, mc.getWindow().getWidth(), mc.getWindow().getHeight());
+	}
+
+	public static Screen getRequestScreen() {
+		if (requestScreen == null) return requestScreen;
+		requestScreen = requestScreen.getSelf();
+		return requestScreen;
+	}
 
 	@Override
 	public void onInitializeClient() {
@@ -37,7 +51,7 @@ public class MainClient implements ClientModInitializer {
 		//BitStakRenderer.register();
 	}
 	public static int getHorizontalPlayerFacing() {
-		PlayerEntity pe =MinecraftClient.getInstance().player;
+		PlayerEntity pe = mc.player;
 		if (pe != null)
 			return pe.getHorizontalFacing().getHorizontal();
 		return -1;
