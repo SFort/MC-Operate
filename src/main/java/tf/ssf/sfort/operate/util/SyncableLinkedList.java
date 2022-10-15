@@ -1,6 +1,10 @@
 package tf.ssf.sfort.operate.util;
 
-public class SyncableLinkedList<T> {
+import net.minecraft.nbt.NbtCompound;
+
+import java.util.function.Supplier;
+
+public abstract class SyncableLinkedList<T> {
 	public static final Node LOCK = new Node<>(null);
 	public Node<T> first;
 	public Node<T> last;
@@ -42,12 +46,7 @@ public class SyncableLinkedList<T> {
 		return first == null;
 	}
 
-	public T popSync() {
-		if (!isSyncable()) return null;
-		T ret = oldestRequiredSync.item;
-		oldestRequiredSync = oldestRequiredSync.next;
-		return ret;
-	}
+	public abstract Supplier<NbtCompound> popSync();
 
 	public void lockSync() {
 		oldestRequiredSync = LOCK;

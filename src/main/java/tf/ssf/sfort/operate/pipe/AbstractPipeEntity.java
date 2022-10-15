@@ -21,18 +21,23 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.tick.OrderedTick;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.pipe.util.DroppingItemPipeAcceptor;
+import tf.ssf.sfort.operate.pipe.util.ItemPipeAcceptor;
+import tf.ssf.sfort.operate.pipe.util.TransportedStackList;
+import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 import tf.ssf.sfort.operate.util.SyncableLinkedList;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.IntFunction;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor, DroppingItemPipeAcceptor {
 	public byte connectedSides = 0;
 
-	public final SyncableLinkedList<TransportedStack> itemQueue = new SyncableLinkedList<>();
+	public final TransportedStackList itemQueue = new TransportedStackList();
 
 	public AbstractPipeEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
 		super(type, pos, state);
@@ -52,9 +57,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		NbtCompound tag = new NbtCompound();
 		NbtCompound items = new NbtCompound();
 		int i=0;
-		TransportedStack stack = itemQueue.popSync();
+		Supplier<NbtCompound> stack = itemQueue.popSync();
 		while (stack != null) {
-			items.put(Integer.toString(i++), stack.toClientTag(new NbtCompound()));
+			items.put(Integer.toString(i++), stack.get());
 			stack = itemQueue.popSync();
 		}
 		tag.put("addQ", items);
@@ -88,8 +93,11 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		tag.putByte("sides", connectedSides);
 		NbtCompound items = new NbtCompound();
 		int i=0;
-		for (SyncableLinkedList.Node<TransportedStack> stack = itemQueue.first; stack != null; stack=stack.next) {
-			items.put(Integer.toString(i++), stack.item.toClientTag(new NbtCompound()));
+		{
+			itemQueue.oldestRequiredSync = itemQueue.first;
+			for (Supplier<NbtCompound> stack = itemQueue.popSync(); stack != null; stack = itemQueue.popSync()) {
+				items.put(Integer.toString(i++), stack.get());
+			}
 		}
 		tag.put("items", items);
 		return tag;

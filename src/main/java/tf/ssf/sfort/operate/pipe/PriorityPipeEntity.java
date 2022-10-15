@@ -9,6 +9,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 
 import java.util.Arrays;
 import java.util.Collections;

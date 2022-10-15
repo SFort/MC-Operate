@@ -1,15 +1,17 @@
-package tf.ssf.sfort.operate.pipe;
+package tf.ssf.sfort.operate.pipe.util;
 
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.enchantment.Enchantments;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Quaternion;
 import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
@@ -21,9 +23,11 @@ import java.util.function.Function;
 
 public class TransportedStack {
 	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
+	public static final ItemStack bundleStack = Items.BUNDLE.getDefaultStack();
 	public static final Map<String, Function<NbtCompound, TransportedStack>> superNbtConstructors = new HashMap<>();
 	static {
 		superNbtConstructors.put("guided", GuidedTransportedStack::new);
+		bundleStack.addEnchantment(Enchantments.UNBREAKING, 1);
 	}
 
 	public static TransportedStack fromNbt(NbtCompound tag) {
@@ -40,6 +44,7 @@ public class TransportedStack {
 	public final ItemStack stack;
 	public Direction origin;
 	public long travelTime;
+	public boolean drawSkipped = false;
 
 	public TransportedStack(ItemStack stack, Direction origin, long travelTime) {
 		this.stack = stack;
@@ -51,6 +56,11 @@ public class TransportedStack {
 		this.stack = ItemStack.fromNbt(tag.getCompound("stack"));
 		this.origin = Direction.values()[Math.min(5, Math.max(0, tag.getInt("origin")))];
 		this.travelTime = tag.getLong("ttime");
+
+		NbtCompound client = tag.getCompound("client");
+		if (!client.isEmpty()) {
+			this.drawSkipped = client.getBoolean("skipped");
+		}
 	}
 
 	public void writeTag(NbtCompound tag) {
@@ -79,8 +89,11 @@ public class TransportedStack {
 		return tag;
 	}
 
+	public NbtCompound toClientTag() {
+		return toClientTag(new NbtCompound());
+	}
+
 	public void render(double progress, World world, ItemRenderer ir, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
-		matrix.push();
 		switch (this.origin) {
 			case UP:
 				matrix.translate(.5, .5 + progress, .37);
@@ -101,12 +114,21 @@ public class TransportedStack {
 				break;
 			case EAST:
 				matrix.translate(.5 + progress, .45, .63);
-				break;
 		}
 		matrix.push();
-		matrix.scale(.5f, .5f, .5f);
-		ir.renderItem(null, this.stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
-		matrix.pop();
+		if (this.drawSkipped) {
+			matrix.push();
+			matrix.scale(.3f, .3f, .3f);
+			matrix.translate(0, 0, 0.01);
+			ir.renderItem(null, bundleStack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			matrix.pop();
+			matrix.translate(0, .1, 0);
+			matrix.scale(.15f, .15f, .15f);
+			ir.renderItem(null, this.stack, ModelTransformation.Mode.GUI, false, matrix, vertex, world, light, overlay, -1);
+		} else {
+			matrix.scale(.5f, .5f, .5f);
+			ir.renderItem(null, this.stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+		}
 		matrix.pop();
 	}
 }

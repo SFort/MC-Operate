@@ -28,7 +28,6 @@ public class Main implements ModInitializer {
 	public static final ChunkTicketType<BlockPos> PIPE_TICKET_TYPE = ChunkTicketType.create("portal", Vec3i::compareTo, 60);
 	public static final Identifier reqPacket = Main.id("req_packet");
 
-
 	@Override
 	public void onInitialize() {
 		Config.load();

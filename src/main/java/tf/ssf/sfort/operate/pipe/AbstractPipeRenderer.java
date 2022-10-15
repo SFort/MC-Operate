@@ -1,7 +1,6 @@
 package tf.ssf.sfort.operate.pipe;
 
 import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -12,7 +11,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import tf.ssf.sfort.operate.MainClient;
+import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 import tf.ssf.sfort.operate.util.SyncableLinkedList;
 
 import static tf.ssf.sfort.operate.MainClient.mc;
@@ -40,7 +39,9 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 				entity.itemQueue.first = stackNode.next;
 				if (entity.itemQueue.first == null) entity.itemQueue.last = null;
 			}
+			matrix.push();
 			stackNode.item.render(progress, world, ir, tickDelta, matrix, vertex, light, overlay);
+			matrix.pop();
 		}
 		matrix.pop();
 	}

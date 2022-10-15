@@ -1,10 +1,11 @@
-package tf.ssf.sfort.operate.pipe;
+package tf.ssf.sfort.operate.pipe.util;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import tf.ssf.sfort.operate.pipe.advanced.util.PipePathing;
+import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 
 import java.util.List;
 
