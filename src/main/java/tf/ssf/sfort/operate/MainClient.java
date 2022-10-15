@@ -3,6 +3,7 @@ package tf.ssf.sfort.operate;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.option.KeyBinding;
 import net.minecraft.entity.player.PlayerEntity;
 import tf.ssf.sfort.operate.client.FakeRequestScreen;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
@@ -24,6 +25,7 @@ public class MainClient implements ClientModInitializer {
 	public static FakeRequestScreen requestScreen = null;
 
 	public static void requestPipeKeyboardHack() {
+		KeyBinding.unpressAll();
 		requestScreen = new FakeRequestScreen().getSelf();
 		if (requestScreen != null) requestScreen.init(mc, mc.getWindow().getWidth(), mc.getWindow().getHeight());
 	}
