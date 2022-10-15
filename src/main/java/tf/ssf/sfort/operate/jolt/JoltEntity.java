@@ -3,6 +3,7 @@ package tf.ssf.sfort.operate.jolt;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.PistonHeadBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
@@ -159,10 +160,11 @@ public class JoltEntity extends BlockEntity implements Inventory {
 
     @Override
     public void markDirty() {
-        super.markDirty();
-
-        if (world != null && !world.isClient()) {
-            ((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+        if (world != null) {
+            world.markDirty(pos);
+            if (!world.isClient()) {
+                ((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+            }
         }
     }
 

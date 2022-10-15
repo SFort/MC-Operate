@@ -2,6 +2,7 @@ package tf.ssf.sfort.operate.pipe;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.ItemEntity;
@@ -78,12 +79,16 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		}
 	}
 	public void markDirtyServer() {
-		super.markDirty();
+		if (world != null) {
+			world.markDirty(pos);
+		}
 	}
 	public void partialMarkDirty() {
-		super.markDirty();
-		if (world != null && !world.isClient()) {
-			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+		if (world != null) {
+			world.markDirty(pos);
+			if (!world.isClient()) {
+				((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+			}
 		}
 	}
 
@@ -195,8 +200,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				dropTransportedStack(entry);
 			}
 			itemQueue.progress();
-			//avoid syncing with clients
-			super.markDirty();
+			markDirtyServer();
 			if (itemQueue.isEmpty()) {
 				return -1;
 			} else {
@@ -206,7 +210,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		return entry.travelTime;
 	}
 	public void dropTransportedStack(TransportedStack stack) {
-		Vec3i dropDir = stack.origin.getOpposite().getVector();
+		dropTransportedStack(stack, stack.origin.getOpposite().getVector());
+	}
+	public void dropTransportedStack(TransportedStack stack, Vec3i dropDir) {
 		ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), stack.stack);
 		itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
 		world.spawnEntity(itemEntity);
@@ -219,14 +225,14 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	}
 	public boolean transportStack(TransportedStack entry, Direction dir) {
 		BlockPos offset = pos.offset(dir);
-		if (world.getBlockState(offset).getCollisionShape(world, offset).isEmpty()) {
-			Vec3i dropDir = dir.getVector();
-			ItemEntity itemEntity = new ItemEntity(world, pos.getX() + .5 + (dropDir.getX() >> 1), pos.getY() + .5 + (dropDir.getY() >> 1), pos.getZ() + .5 + (dropDir.getZ() >> 1), entry.stack);
-			itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
-			world.spawnEntity(itemEntity);
-			return true;
-		}
 		BlockEntity e = world.getBlockEntity(offset);
+		if (e == null) {
+			if (world.getBlockState(offset).getCollisionShape(world, offset).isEmpty()) {
+				dropTransportedStack(entry, dir.getVector());
+				return true;
+			}
+			return false;
+		}
 		if (e instanceof ItemPipeAcceptor && ((ItemPipeAcceptor) e).acceptItemFrom(entry, dir.getOpposite())) {
 			return true;
 		}
@@ -263,6 +269,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				if (stack.isEmpty()) return true;
 			}
 		}
+
 		return false;
 	}
 
