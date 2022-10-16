@@ -62,6 +62,7 @@ public class BitStakEntity extends BlockEntity {
 		if (!state.get(BitStak.POWERED)) return;
 		if (instructions.isEmpty()) return;
 		insnPos++;
+		world.markDirty(pos);
 		if (insnPos >= instructions.size() || insnPos < 0) {
 			world.setBlockState(pos, state.with(BitStak.POWERED, false));
 			return;

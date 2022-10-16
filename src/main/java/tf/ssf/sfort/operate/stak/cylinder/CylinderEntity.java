@@ -257,6 +257,13 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 	}
 
 	@Override
+	public void markDirty() {
+		if (world != null) {
+			world.markDirty(pos);
+		}
+	}
+
+	@Override
 	public ItemStack removeStack(int slot) {
 		ItemStack ret = getStack(slot);
 		setStack(slot, ItemStack.EMPTY);
