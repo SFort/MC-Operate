@@ -9,12 +9,12 @@ import tf.ssf.sfort.operate.client.FakeRequestScreen;
 import tf.ssf.sfort.operate.jolt.JoltRenderer;
 import tf.ssf.sfort.operate.pipe.BasicPipeRenderer;
 import tf.ssf.sfort.operate.pipe.EntrancePipeRenderer;
-import tf.ssf.sfort.operate.pipe.advanced.ExchangePipeRenderer;
 import tf.ssf.sfort.operate.pipe.FilterPipeRenderer;
-import tf.ssf.sfort.operate.pipe.advanced.OverseerPipeRenderer;
 import tf.ssf.sfort.operate.pipe.PriorityPipeRenderer;
-import tf.ssf.sfort.operate.pipe.advanced.RequestPipeRenderer;
 import tf.ssf.sfort.operate.pipe.UnloadPipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.ExchangePipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.OverseerPipeRenderer;
+import tf.ssf.sfort.operate.pipe.advanced.RequestPipeRenderer;
 import tf.ssf.sfort.operate.punch.PunchRenderer;
 import tf.ssf.sfort.operate.stak.cylinder.CylinderRenderer;
 import tf.ssf.sfort.operate.tube.ColorTubeRenderer;
@@ -58,4 +58,5 @@ public class MainClient implements ClientModInitializer {
 			return pe.getHorizontalFacing().getHorizontal();
 		return -1;
 	}
+
 }

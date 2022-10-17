@@ -6,6 +6,7 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.Entity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
@@ -28,6 +29,28 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		if (world == null) return;
 		final float step = 1 / (float) entity.getPipeTransferTime();
 		matrix.push();
+		boolean xFlip = false;
+		boolean xMid =  false;
+		boolean zFlip = false;
+		boolean zMid = false;
+		{
+			Entity cam = mc.cameraEntity;
+			BlockPos entityPos = entity.getPos();
+			if (cam != null) {
+				if (entityPos.getX()+.4 < cam.getX()){
+					xFlip = true;
+					if (entityPos.getX()+.6 < cam.getX()){
+						xMid = true;
+					}
+				}
+				if (entityPos.getZ()+.4 < cam.getZ()){
+					zFlip = true;
+					if (entityPos.getZ()+.6 < cam.getZ()){
+						zMid = true;
+					}
+				}
+			}
+		}
 		for (SyncableLinkedList.Node<TransportedStack> stackNode = entity.itemQueue.first; stackNode!=null; stackNode=stackNode.next) {
 			int pipeTransferTime = entity.getPipeTransferTime();
 			long diff = Math.min(pipeTransferTime, stackNode.item.travelTime - world.getTime());
@@ -40,7 +63,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 				if (entity.itemQueue.first == null) entity.itemQueue.last = null;
 			}
 			matrix.push();
-			stackNode.item.render(progress, world, ir, tickDelta, matrix, vertex, light, overlay);
+			stackNode.item.render(progress, world, ir, tickDelta, matrix, vertex, light, overlay, xFlip, zFlip, xMid, zMid);
 			matrix.pop();
 		}
 		matrix.pop();
