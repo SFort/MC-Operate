@@ -1,14 +1,9 @@
 package tf.ssf.sfort.operate.pipe.util;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.render.BufferBuilder;
-import net.minecraft.client.render.GameRenderer;
-import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.render.TexturedRenderLayers;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.BakedModel;
 import net.minecraft.client.texture.Sprite;
@@ -156,21 +151,13 @@ public class TransportedStack {
 		float n = sprite.getMinV();
 		float o = sprite.getMaxV();
 		// POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL
-		RenderSystem.setShader(GameRenderer::getRenderTypeEntityTranslucentCullShader);
-		RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, 1.0f);
-		Tessellator tessellator = Tessellator.getInstance();
-		BufferBuilder bb = tessellator.getBuffer();
-		RenderSystem.enableBlend();
-		RenderSystem.defaultBlendFunc();
-		RenderSystem.depthMask(true);
 		RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
-		bb.begin(VertexFormat.DrawMode.QUADS, VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL);
 		VertexConsumer vertexConsumer = vertex.getBuffer(TexturedRenderLayers.getEntityTranslucentCull());
 		Matrix4f mat = matrix.peek().getPositionMatrix();
 		vertexConsumer.vertex(mat,-0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(m, o).overlay(overlay).light(light).normal(0, 0, 0).next();
 		vertexConsumer.vertex(mat,-0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(m, n).overlay(overlay).light(light).normal(0, 0, 0).next();
 		vertexConsumer.vertex(mat,0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(l, n).overlay(overlay).light(light).normal(0, 0, 0).next();
 		vertexConsumer.vertex(mat,0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(l, o).overlay(overlay).light(light).normal(0, 0, 0).next();
-		tessellator.draw();
+
 	}
 }
