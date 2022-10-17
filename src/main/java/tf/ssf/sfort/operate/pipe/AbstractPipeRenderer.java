@@ -57,7 +57,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 				case DOWN -> matrix.scale(1, 1, -1);
 				case WEST, NORTH -> matrix.scale(-1, 1, 1);
 			}
-			if ((entity.connectedSides & (1 << dir.ordinal())) != 0) {
+			if ((entity.connectedSidesByte & (1 << dir.ordinal())) != 0) {
 				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
 				pos.set(entity.getPos()).move(dir);
 				if (world != null) {

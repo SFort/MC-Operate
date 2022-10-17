@@ -27,15 +27,22 @@ import tf.ssf.sfort.operate.pipe.util.TransportedStackList;
 import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 import tf.ssf.sfort.operate.util.SyncableLinkedList;
 
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor, DroppingItemPipeAcceptor {
-	public byte connectedSides = 0;
+	public byte connectedSidesByte = 0;
+	/* b0 - hasDirtyClient
+	 * b1 - hasDirtyServer
+	 * b1 - hasScheduledTick
+	 */
+	public byte accFlags = 0;
+	public Direction[] connectedSides = new Direction[0];
 
 	public final TransportedStackList itemQueue = new TransportedStackList();
 
@@ -45,6 +52,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	@Override
 	public Packet<ClientPlayPacketListener> toUpdatePacket() {
+		accFlags&=0b110;
 		if (itemQueue.isSyncable()) {
 			return BlockEntityUpdateS2CPacket.create(
 					this,
@@ -90,11 +98,16 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			}
 		}
 	}
+	public void partialMarkDirtyClient() {
+		if (world != null && !world.isClient()) {
+			((ServerWorld) world).getChunkManager().markForUpdate(getPos());
+		}
+	}
 
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {
 		NbtCompound tag = new NbtCompound();
-		tag.putByte("sides", connectedSides);
+		tag.putByte("sides", connectedSidesByte);
 		NbtCompound items = new NbtCompound();
 		int i=0;
 		{
@@ -109,8 +122,9 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	@Override
 	public void writeNbt(NbtCompound tag) {
+		accFlags&=0b101;
 		super.writeNbt(tag);
-		tag.putByte("sides", connectedSides);
+		tag.putByte("sides", connectedSidesByte);
 		NbtCompound items = new NbtCompound();
 		int i=0;
 		for (SyncableLinkedList.Node<TransportedStack> stack = itemQueue.first; stack != null; stack=stack.next) {
@@ -144,7 +158,15 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		return false;
 	}
 	public void readNbtCommon(NbtCompound tag) {
-		connectedSides = tag.getByte("sides");
+		{
+			connectedSidesByte = tag.getByte("sides");
+			Direction[] readingSides = new Direction[Integer.bitCount(connectedSidesByte & 0b111111)];
+			int i = 0;
+			for (Direction d : Direction.values()) {
+				if ((connectedSidesByte & (1 << d.ordinal())) != 0) readingSides[i++] = d;
+			}
+			connectedSides = readingSides;
+		}
 		itemQueue.clear();
 		NbtCompound items = tag.getCompound("items");
 		int i=0;
@@ -164,13 +186,38 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		}
 	}
 	public void wrenchSide(Direction side) {
-		connectedSides ^= 1 << side.ordinal();
 		markDirty();
+		toggleConnection(side);
 	}
-	public List<Direction> getOutputs(TransportedStack transport){
-		List<Direction> ret = Arrays.stream(Direction.values()).filter(d -> transport.origin != d && (connectedSides & (1 << d.ordinal())) != 0).collect(Collectors.toList());
-		Collections.shuffle(ret);
-		return ret;
+	public void toggleConnection(Direction side) {
+		connectedSidesByte ^= 1 << side.ordinal();
+		for (int i=0;i<connectedSides.length;i++) {
+			if (connectedSides[i] != side) continue;
+			Direction[] n = new Direction[connectedSides.length-1];
+			System.arraycopy(connectedSides, 0, n, 0, i);
+			if (i < n.length) System.arraycopy(connectedSides, i+1, n, i, connectedSides.length-i-1);
+			connectedSides = n;
+			return;
+		}
+		Direction[] n = new Direction[connectedSides.length+1];
+		System.arraycopy(connectedSides, 0, n, 0, connectedSides.length);
+		n[connectedSides.length] = side;
+		connectedSides = n;
+	}
+	public Function<TransportedStack, List<Direction>> getOutputs(){
+		AtomicReference<Direction> lastDir = new AtomicReference<>();
+		List<Direction> ret = new ArrayList<>();
+		return stack -> {
+			if (lastDir.get() != stack.origin) {
+				lastDir.set(stack.origin);
+				ret.clear();
+				for (Direction d : connectedSides) {
+					if (stack.origin != d) ret.add(d);
+				}
+			}
+			Collections.shuffle(ret);
+			return ret;
+		};
 	}
 
 	public void pipeTick() {
@@ -181,6 +228,8 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		long nextTransfer = progressQueue();
 		if (nextTransfer >= 0) {
 			world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, nextTransfer + 1, world.getTickOrder()));
+		} else {
+			accFlags&=0b011;
 		}
 	}
 	public long progressQueue() {
@@ -188,23 +237,28 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		if (itemQueue.isEmpty()) return -1;
 
 		TransportedStack entry = itemQueue.first.item;
-		while (entry.travelTime <= world.getLevelProperties().getTime()) {
-			transport :{
-				List<Direction> outputs = getOutputs(entry);
-				Direction preferredPath = entry.getPreferredPath(outputs, pos);
-				if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath))
-					break transport;
-				if (transportStack(entry, outputs))
-					break transport;
-				dropTransportedStack(entry);
-			}
-			itemQueue.progress();
-			markDirtyServer();
-			if (itemQueue.isEmpty()) {
-				return -1;
-			} else {
-				entry = itemQueue.first.item;
-			}
+		long worldTime = world.getLevelProperties().getTime();
+		if (entry.travelTime <= worldTime) {
+			Function<TransportedStack, List<Direction>> outputsFunc = getOutputs();
+			do {
+				transport:
+				{
+					List<Direction> outputs = outputsFunc.apply(entry);
+					Direction preferredPath = entry.getPreferredPath(outputs, pos);
+					if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath))
+						break transport;
+					if (transportStack(entry, outputs))
+						break transport;
+					dropTransportedStack(entry);
+				}
+				itemQueue.progress();
+				markDirtyServer();
+				if (itemQueue.isEmpty()) {
+					return -1;
+				} else {
+					entry = itemQueue.first.item;
+				}
+			} while (entry.travelTime <= worldTime);
 		}
 		return entry.travelTime;
 	}
@@ -298,8 +352,15 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		stack.travelTime = world.getLevelProperties().getTime() + getPipeTransferTime();
 		stack.origin = dir;
 		itemQueue.push(stack);
-		world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
-		partialMarkDirty();
+		if ((accFlags & 0b100) == 0) {
+			world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
+		}
+		switch (accFlags & 0b11) {
+			case 0 -> partialMarkDirty();
+			case 0b1 -> markDirtyServer();
+			case 0b10 -> partialMarkDirtyClient();
+		}
+		accFlags |= 0b111;
 		return true;
 	}
 	@Override
@@ -310,7 +371,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 	}
 
 	public boolean isConnected(Direction dir) {
-		return (connectedSides & (1 << dir.ordinal())) != 0;
+		return (connectedSidesByte & (1 << dir.ordinal())) != 0;
 	}
 	public int getPipeTransferTime() {
 		return 10;

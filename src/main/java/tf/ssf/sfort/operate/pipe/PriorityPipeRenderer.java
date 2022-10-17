@@ -31,7 +31,7 @@ public class PriorityPipeRenderer<T extends PriorityPipeEntity> extends Abstract
 				case DOWN -> matrix.scale(1, 1, -1);
 				case WEST, NORTH -> matrix.scale(-1, 1, 1);
 			}
-			if ((entity.connectedLowPrioritySides & (1 << dir.ordinal())) != 0) {
+			if ((entity.connectedLowPrioritySidesByte & (1 << dir.ordinal())) != 0) {
 				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .7f);
 				pos.set(entity.getPos()).move(dir);
 				if (world != null) {
