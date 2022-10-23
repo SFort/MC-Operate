@@ -154,10 +154,10 @@ public class TransportedStack {
 		RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
 		VertexConsumer vertexConsumer = vertex.getBuffer(TexturedRenderLayers.getEntityTranslucentCull());
 		Matrix4f mat = matrix.peek().getPositionMatrix();
-		vertexConsumer.vertex(mat,-0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(m, o).overlay(overlay).light(light).normal(0, 0, 0).next();
-		vertexConsumer.vertex(mat,-0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(m, n).overlay(overlay).light(light).normal(0, 0, 0).next();
-		vertexConsumer.vertex(mat,0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(l, n).overlay(overlay).light(light).normal(0, 0, 0).next();
-		vertexConsumer.vertex(mat,0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(l, o).overlay(overlay).light(light).normal(0, 0, 0).next();
+		vertexConsumer.vertex(mat,-0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(m, o).overlay(overlay).light(light).normal(.25f, .25f, .25f).next();
+		vertexConsumer.vertex(mat,-0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(m, n).overlay(overlay).light(light).normal(.25f, .25f, .25f).next();
+		vertexConsumer.vertex(mat,0.25f, 0.35f, 0.0f).color(255, 255, 255, 255).texture(l, n).overlay(overlay).light(light).normal(.25f, .25f, .25f).next();
+		vertexConsumer.vertex(mat,0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(l, o).overlay(overlay).light(light).normal(.25f, .25f, .25f).next();
 
 	}
 }
