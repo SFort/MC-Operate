@@ -21,6 +21,9 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.tick.OrderedTick;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
+import tf.ssf.sfort.operate.pipe.util.GuidedTransportedStack;
+import tf.ssf.sfort.operate.pipe.util.ItemPipeMarkNonBorderSync;
+import tf.ssf.sfort.operate.pipe.util.OperatePipeUpdateS2CPacket;
 import tf.ssf.sfort.operate.pipe.util.DroppingItemPipeAcceptor;
 import tf.ssf.sfort.operate.pipe.util.ItemPipeAcceptor;
 import tf.ssf.sfort.operate.pipe.util.TransportedStackList;
@@ -35,13 +38,23 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 
-public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor, DroppingItemPipeAcceptor {
+public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipeAcceptor, ItemPipeMarkNonBorderSync, DroppingItemPipeAcceptor {
+	public enum AccFlags{
+		HAS_DIRTY_CLIENT, HAS_DIRTY_SERVER, HAS_SCHEDULED_TICK, SHOULD_NON_BORDER_SYNC;
+		public static final int DIRTY_SERVER_CLIENT_FLAG = HAS_DIRTY_CLIENT.flag | HAS_DIRTY_SERVER.flag;
+
+		public final int flag;
+		public final int mask;
+		AccFlags() {
+			flag = 1 << this.ordinal();
+			mask = ~flag;
+		}
+		public int clearFlag(int flags) {
+			return flags & mask;
+		}
+	}
 	public byte connectedSidesByte = 0;
-	/* b0 - hasDirtyClient
-	 * b1 - hasDirtyServer
-	 * b1 - hasScheduledTick
-	 */
-	public byte accFlags = 0;
+	public int accFlags = 0;
 	public Direction[] connectedSides = new Direction[0];
 
 	public final TransportedStackList itemQueue = new TransportedStackList();
@@ -52,12 +65,19 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	@Override
 	public Packet<ClientPlayPacketListener> toUpdatePacket() {
-		accFlags&=0b110;
+		accFlags = AccFlags.HAS_DIRTY_CLIENT.clearFlag(accFlags);
 		if (itemQueue.isSyncable()) {
-			return BlockEntityUpdateS2CPacket.create(
+			if ((accFlags & AccFlags.SHOULD_NON_BORDER_SYNC.flag) != 0) {
+				accFlags = AccFlags.SHOULD_NON_BORDER_SYNC.clearFlag(accFlags);
+				return BlockEntityUpdateS2CPacket.create(
+						this,
+						b -> this.clientItemUpdateTag()
+				);
+			}
+			return new OperatePipeUpdateS2CPacket(BlockEntityUpdateS2CPacket.create(
 					this,
 					b -> this.clientItemUpdateTag()
-			);
+			));
 		}
 		return BlockEntityUpdateS2CPacket.create(this);
 	}
@@ -74,6 +94,10 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		return tag;
 	}
 
+	@Override
+	public void markPipeNonBorderSync() {
+		accFlags |= AccFlags.SHOULD_NON_BORDER_SYNC.flag;
+	}
 	@Override
 	public void markDirty() {
 		itemQueue.lockSync();
@@ -122,7 +146,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 
 	@Override
 	public void writeNbt(NbtCompound tag) {
-		accFlags&=0b101;
+		accFlags = AccFlags.HAS_DIRTY_SERVER.clearFlag(accFlags);
 		super.writeNbt(tag);
 		tag.putByte("sides", connectedSidesByte);
 		NbtCompound items = new NbtCompound();
@@ -225,12 +249,34 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		if (world instanceof ServerWorld && Config.chunkLoadPipes) {
 			((ServerWorld)world).getChunkManager().addTicket(Main.PIPE_TICKET_TYPE, new ChunkPos(pos), 3, pos);
 		}
-		long nextTransfer = progressQueue();
+		long nextTransfer = world instanceof ServerWorld ? progressQueue() : progressQueueClient();
 		if (nextTransfer >= 0) {
 			world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, nextTransfer + 1, world.getTickOrder()));
 		} else {
-			accFlags&=0b011;
+			accFlags = AccFlags.HAS_SCHEDULED_TICK.clearFlag(accFlags);
 		}
+	}
+	public long progressQueueClient() {
+		if (world == null) return -1;
+		if (itemQueue.isEmpty()) return -1;
+		TransportedStack entry = itemQueue.first.item;
+		long worldTime = world.getLevelProperties().getTime();
+		if (entry.travelTime <= worldTime) {
+			Function<TransportedStack, List<Direction>> outputsFunc = getOutputs();
+			do {
+				List<Direction> outputs = outputsFunc.apply(entry);
+				if (!(entry instanceof GuidedTransportedStack) && outputs.size() == 1){
+					transportStack(entry, outputs.get(0), false);
+				}
+				itemQueue.progress();
+				if (itemQueue.isEmpty()) {
+					return -1;
+				} else {
+					entry = itemQueue.first.item;
+				}
+			} while (entry.travelTime <= worldTime);
+		}
+		return entry.travelTime;
 	}
 	public long progressQueue() {
 		if (world == null) return -1;
@@ -245,11 +291,14 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 				{
 					List<Direction> outputs = outputsFunc.apply(entry);
 					Direction preferredPath = entry.getPreferredPath(outputs, pos);
-					if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath))
+					if (preferredPath != null && outputs.contains(preferredPath) && transportStack(entry, preferredPath, true))
 						break transport;
-					if (transportStack(entry, outputs))
+					if (transportStack(entry, outputs, outputs.size() != 1)) {
 						break transport;
+					}
 					dropTransportedStack(entry);
+
+
 				}
 				itemQueue.progress();
 				markDirtyServer();
@@ -270,13 +319,13 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		itemEntity.addVelocity(dropDir.getX(), dropDir.getY(), dropDir.getZ());
 		world.spawnEntity(itemEntity);
 	}
-	public boolean transportStack(TransportedStack entry, List<Direction> sides) {
+	public boolean transportStack(TransportedStack entry, List<Direction> sides, boolean markTargetPipe) {
 		for (Direction dir : sides) {
-			if (transportStack(entry, dir)) return true;
+			if (transportStack(entry, dir, markTargetPipe)) return true;
 		}
 		return false;
 	}
-	public boolean transportStack(TransportedStack entry, Direction dir) {
+	public boolean transportStack(TransportedStack entry, Direction dir, boolean markTargetPipe) {
 		BlockPos offset = pos.offset(dir);
 		BlockEntity e = world.getBlockEntity(offset);
 		if (e == null) {
@@ -287,6 +336,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			return false;
 		}
 		if (e instanceof ItemPipeAcceptor && ((ItemPipeAcceptor) e).acceptItemFrom(entry, dir.getOpposite())) {
+			if (markTargetPipe && e instanceof ItemPipeMarkNonBorderSync) ((ItemPipeMarkNonBorderSync) e).markPipeNonBorderSync();
 			return true;
 		}
 		if (e instanceof Inventory) {
@@ -352,10 +402,10 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 		stack.travelTime = world.getLevelProperties().getTime() + getPipeTransferTime();
 		stack.origin = dir;
 		itemQueue.push(stack);
-		if ((accFlags & 0b100) == 0) {
+		if ((accFlags & AccFlags.HAS_SCHEDULED_TICK.flag) == 0) {
 			world.getBlockTickScheduler().scheduleTick(new OrderedTick<>(asBlock(), pos, stack.travelTime + 1, world.getTickOrder()));
 		}
-		switch (accFlags & 0b11) {
+		switch (accFlags & AccFlags.DIRTY_SERVER_CLIENT_FLAG) {
 			case 0 -> partialMarkDirty();
 			case 0b1 -> markDirtyServer();
 			case 0b10 -> partialMarkDirtyClient();

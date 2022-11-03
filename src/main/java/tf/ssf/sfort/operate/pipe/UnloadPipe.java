@@ -79,6 +79,8 @@ public class UnloadPipe extends AbstractPipe{
 							if (world instanceof ServerWorld) {
 								world.playSound(null, pos, Sounds.LOADER_LOCK, SoundCategory.BLOCKS, 1, world.getRandom().nextFloat() * 0.1F + 0.9F);
 							}
+						} else {
+							((UnloadPipeEntity) be).markPipeNonBorderSync();
 						}
 						return;
 					}

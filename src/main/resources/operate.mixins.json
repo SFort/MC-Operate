@@ -5,6 +5,8 @@
   "package": "tf.ssf.sfort.operate.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "AccessorThreadedAnvilChunkStorage",
+    "MixinChunkHolder",
     "MixinServerPlayNetworkHandler"
   ],
   "client": [

@@ -8,6 +8,7 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
@@ -82,8 +83,9 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 	@Override
 	public void pipeTick() {
 		super.pipeTick();
-		if (world == null) return;
-		progressRequestQue();
+		if (world instanceof ServerWorld) {
+			progressRequestQue();
+		}
 	}
 	public void progressRequestQue(){
 		if (requestQue == null) return;

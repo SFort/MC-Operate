@@ -7,6 +7,8 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.server.world.ServerWorld;
@@ -25,7 +27,16 @@ public abstract class AbstractPipe extends Block implements BlockEntityProvider,
 	public AbstractPipe() {
 		super(Settings.of(Material.PISTON).nonOpaque().strength(.35f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 	}
-
+	@Override
+	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+		if (!world.isClient) return null;
+		//Scheduled ticks are a nope client-side, thanks mojang
+		return (world1, pos, state1, blockEntity) -> {
+			if (blockEntity instanceof AbstractPipeEntity) {
+				((AbstractPipeEntity) blockEntity).pipeTick();
+			}
+		};
+	}
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		return collisionShape;
@@ -47,11 +58,9 @@ public abstract class AbstractPipe extends Block implements BlockEntityProvider,
 	}
 	@Override
 	public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-		if (!world.isClient) {
-			BlockEntity e = world.getBlockEntity(pos);
-			if(e instanceof AbstractPipeEntity) {
-				((AbstractPipeEntity) e).pipeTick();
-			}
+		BlockEntity e = world.getBlockEntity(pos);
+		if(e instanceof AbstractPipeEntity) {
+			((AbstractPipeEntity) e).pipeTick();
 		}
 	}
 	@Override

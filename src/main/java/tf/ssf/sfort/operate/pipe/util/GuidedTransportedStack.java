@@ -22,7 +22,7 @@ public class GuidedTransportedStack extends TransportedStack {
 		this.path = path;
 	}
 
-	/*@Override
+	@Override
 	public void writeClientTag(NbtCompound tag) {
 		super.writeClientTag(tag);
 		tag.putString("super", "guided");
@@ -31,7 +31,7 @@ public class GuidedTransportedStack extends TransportedStack {
 			pathTag.putByte("0", (byte) path.first.direction.getId());
 			tag.put("guided", pathTag);
 		}
-	}*/
+	}
 
 	@Override
 	public void writeTag(NbtCompound tag) {
