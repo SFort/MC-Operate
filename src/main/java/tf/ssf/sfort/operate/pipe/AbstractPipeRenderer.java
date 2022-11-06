@@ -68,65 +68,65 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 		matrix.pop();
 	}
 	public void renderConnections(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
-		World world = entity.getWorld();
-		BlockPos.Mutable pos = entity.getPos().mutableCopy();
+		renderConnections(entity.getWorld(), entity.getPos(), entity.connectedSidesByte, tickDelta, matrix, vertex, light, overlay, 1, 1, 1, .8f, .5f, .5f, .5f, .7f);
+	}
+	public void renderConnections(World world, BlockPos epos, byte connectedSidesByte, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay, float red1, float green1, float blue1, float alpha1, float red2, float green2, float blue2, float alpha2) {
+		BlockPos.Mutable pos = epos.mutableCopy();
 		for (Direction dir : Direction.values()) {
-			matrix.push();
-			matrix.translate(.5, .5, .5);
-			matrix.push();
-			matrix.multiply(dir.getRotationQuaternion());
-			switch (dir) {
-				case DOWN -> matrix.scale(1, 1, -1);
-				case WEST, NORTH -> matrix.scale(-1, 1, 1);
-			}
-			if ((entity.connectedSidesByte & (1 << dir.ordinal())) != 0) {
-				drawSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), 1, 1, 1, .7f);
-				pos.set(entity.getPos()).move(dir);
+			if ((connectedSidesByte & (1 << dir.ordinal())) != 0) {
+				matrix.push();
+				pos.set(epos).move(dir);
 				if (world != null) {
 					BlockEntity nentity = world.getBlockEntity(pos);
-					if (nentity instanceof AbstractPipeEntity) {
-						renderDisconnects((AbstractPipeEntity) nentity, tickDelta, matrix, vertex, light, overlay, dir.getOpposite());
-					} else if (nentity instanceof Inventory) {
-						drawDisconnectedSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .8f);
+					MatrixStack.Entry entry = matrix.peek();
+					VertexConsumer vc = vertex.getBuffer(RenderLayer.LINES);
+					if (nentity instanceof AbstractPipeEntity || nentity instanceof Inventory) {
+						switch (dir) {
+							case UP -> {
+								drawGradLine(entry, vc, .375f, .75f, .625f, .375f, 1.25f, .625f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+								drawGradLine(entry, vc, .625f, .75f, .625f, .625f, 1.25f, .625f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+							case DOWN -> {
+								drawGradLine(entry, vc, .375f, .25f, .375f, .375f, -.25f, .375f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+								drawGradLine(entry, vc, .625f, .25f, .375f, .625f, -.25f, .375f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+							case NORTH -> {
+								drawGradLine(entry, vc, .625f, .375f, .25f, .625f, .375f, -.25f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+							case SOUTH -> {
+								drawGradLine(entry, vc, .375f, .375f, .75f, .375f, .375f, 1.25f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+							case WEST -> {
+								drawGradLine(entry, vc, .25f, .375f, .625f, -.25f, .375f, .625f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+							case EAST -> {
+								drawGradLine(entry, vc, .75f, .375f, .375f, 1.25f, .375f, .375f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
+							}
+						}
+					} else {
+						matrix.translate(.5, .5, .5);
+						matrix.multiply(dir.getRotationQuaternion());
+						drawSideLines(entry, vc, red1, green1, blue1, alpha1);
 					}
 				}
+				matrix.pop();
 			}
-			matrix.pop();
-			matrix.pop();
 		}
 	}
-	public void renderDisconnects(AbstractPipeEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay, Direction dir) {
-		if (!entity.isConnected(dir)) drawDisconnectedSideLines(matrix.peek(), vertex.getBuffer(RenderLayer.LINES), .5f, .5f, .5f, .8f);
-	}
 
-	public static void drawDisconnectedSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
-		drawLine(entry, vertexConsumer, -.125f, .5f, -.125f, .125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .5f, -.125f, -.125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, -.125f, .5f, .125f, .125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .5f, .125f, -.125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
+	public static void drawSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red1, float green1, float blue1, float alpha1) {
+		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, red1, green1, blue1, alpha1);
+		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, red1, green1, blue1, alpha1);
+		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, -.125f, .5f, .125f, red1, green1, blue1, alpha1);
+		drawLine(entry, vertexConsumer, .125f, .25f, .125f, .125f, .5f, .125f, red1, green1, blue1, alpha1);
 
-		drawLine(entry, vertexConsumer, -.125f, .5f, .125f, -.125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, -.125f, .5f, -.125f, -.125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .5f, .125f, .125f, .75f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .5f, -.125f, .125f, .75f, .125f, 0, 0, 0, red, green, blue, alpha);
 	}
-	public static void drawSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
-		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, -.125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, .125f, .125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
+	public static void drawGradLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red1, float green1, float blue1, float alpha1, float red2, float green2, float blue2, float alpha2) {
+		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red1, green1, blue1, alpha1).normal(entry.getNormalMatrix(), 1, 1, 1).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red2, green2, blue2, alpha2).normal(entry.getNormalMatrix(), 1, 1, 1).next();
 	}
-
-	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
-		float k = (maxX - minX);
-		float l = (maxY - minY);
-		float m = (maxZ - minZ);
-		float n = MathHelper.sqrt(k * k + l * l + m * m);
-		k /= n;
-		l /= n;
-		m /= n;
-		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (minX + offsetX), (float) (minY + offsetY), (float) (minZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
-		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (maxX + offsetX), (float) (maxY + offsetY), (float) (maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
+	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha) {
+		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
 	}
-
 }

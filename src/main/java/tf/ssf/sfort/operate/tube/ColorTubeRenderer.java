@@ -6,8 +6,6 @@ import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import tf.ssf.sfort.operate.Config;
 
 public class ColorTubeRenderer {
 
@@ -63,69 +61,62 @@ public class ColorTubeRenderer {
 	public static void drawColorLine(MatrixStack matrix, VertexConsumer vertexConsumer, TubeConnectTypes connection, long clr) {
 		int strength = connection.getStrength(clr);
 		if (strength > 0)
-			drawLine(matrix.peek(), vertexConsumer, connection.renderX, .25f, connection.renderZ, connection.renderX, .5f, connection.renderZ, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+			drawLine(matrix.peek(), vertexConsumer, connection.renderX, .25f, connection.renderZ, connection.renderX, .5f, connection.renderZ, connection.red, connection.green, connection.blue, 1);
 	}
 
 	public static void drawStrengthLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, TubeConnectTypes connection, int strength) {
 		switch (strength) {
 			case 15:
-				drawLine(entry, vertexConsumer, .1f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .1f, .25f, .1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 14:
-				drawLine(entry, vertexConsumer, .05f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .05f, .25f, .1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 13:
-				drawLine(entry, vertexConsumer, 0, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, 0, .25f, .1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 12:
-				drawLine(entry, vertexConsumer, -.05f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.05f, .25f, .1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 11:
-				drawLine(entry, vertexConsumer, -.1f, .25f, .1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.1f, .25f, .1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 10:
-				drawLine(entry, vertexConsumer, .1f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .1f, .25f, 0, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 9:
-				drawLine(entry, vertexConsumer, .05f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .05f, .25f, 0, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 8:
-				drawLine(entry, vertexConsumer, 0, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, 0, .25f, 0, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 7:
-				drawLine(entry, vertexConsumer, -.05f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.05f, .25f, 0, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 6:
-				drawLine(entry, vertexConsumer, -.1f, .25f, 0, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.1f, .25f, 0, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 5:
-				drawLine(entry, vertexConsumer, .1f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .1f, .25f, -.1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 4:
-				drawLine(entry, vertexConsumer, .05f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, .05f, .25f, -.1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 3:
-				drawLine(entry, vertexConsumer, 0, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, 0, .25f, -.1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 2:
-				drawLine(entry, vertexConsumer, -.05f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.05f, .25f, -.1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 			case 1:
-				drawLine(entry, vertexConsumer, -.1f, .25f, -.1f, 0, .5f, 0, 0, 0, 0, connection.red, connection.green, connection.blue, 1);
+				drawLine(entry, vertexConsumer, -.1f, .25f, -.1f, 0, .5f, 0, connection.red, connection.green, connection.blue, 1);
 
 		}
 	}
 
 	public static void drawSideFocus(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
-		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, .125f, 0, .5f, 0, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, 0, .5f, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, 0, .5f, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, 0, .5f, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, .125f, 0, .5f, 0, red, green, blue, alpha);
 	}
 
 	public static void drawSideLines(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float red, float green, float blue, float alpha) {
-		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, -.125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
-		drawLine(entry, vertexConsumer, .125f, .25f, .125f, .125f, .5f, .125f, 0, 0, 0, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, -.125f, -.125f, .5f, -.125f, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, -.125f, .125f, .5f, -.125f, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, -.125f, .25f, .125f, -.125f, .5f, .125f, red, green, blue, alpha);
+		drawLine(entry, vertexConsumer, .125f, .25f, .125f, .125f, .5f, .125f, red, green, blue, alpha);
 	}
 
-	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, double offsetX, double offsetY, double offsetZ, float red, float green, float blue, float alpha) {
-		float k = (maxX - minX);
-		float l = (maxY - minY);
-		float m = (maxZ - minZ);
-		float n = MathHelper.sqrt(k * k + l * l + m * m);
-		k /= n;
-		l /= n;
-		m /= n;
-		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (minX + offsetX), (float) (minY + offsetY), (float) (minZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
-		vertexConsumer.vertex(entry.getPositionMatrix(), (float) (maxX + offsetX), (float) (maxY + offsetY), (float) (maxZ + offsetZ)).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
+	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha) {
+		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
 	}
 
 }
