@@ -80,7 +80,7 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 					BlockEntity nentity = world.getBlockEntity(pos);
 					MatrixStack.Entry entry = matrix.peek();
 					VertexConsumer vc = vertex.getBuffer(RenderLayer.LINES);
-					if (nentity instanceof AbstractPipeEntity || nentity instanceof Inventory) {
+					if (nentity instanceof AbstractPipeEntity/* || nentity instanceof Inventory*/) {
 						switch (dir) {
 							case UP -> {
 								drawGradLine(entry, vc, .375f, .75f, .625f, .375f, 1.25f, .625f, red1, green1, blue1, alpha1, red2, green2, blue2, alpha2);
