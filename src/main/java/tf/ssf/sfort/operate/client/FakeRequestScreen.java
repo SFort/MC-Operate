@@ -68,11 +68,18 @@ public class FakeRequestScreen extends Screen {
 			close();
 			return false;
 		}
-		if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-			close();
-			return true;
+		switch (keyCode) {
+			case GLFW.GLFW_KEY_ENTER:
+			case GLFW.GLFW_KEY_KP_ENTER:
+			case GLFW.GLFW_KEY_LEFT_SHIFT:
+			case GLFW.GLFW_KEY_RIGHT_SHIFT:
+			case GLFW.GLFW_KEY_LEFT_CONTROL:
+			case GLFW.GLFW_KEY_RIGHT_CONTROL:
+				close();
+				return true;
+			default:
+				return super.keyPressed(keyCode, scanCode, modifiers);
 		}
-		return super.keyPressed(keyCode, scanCode, modifiers);
 	}
 
 	@Override
