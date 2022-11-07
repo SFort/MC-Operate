@@ -7,7 +7,6 @@ import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
@@ -122,11 +121,25 @@ public class AbstractPipeRenderer<T extends AbstractPipeEntity> {
 
 	}
 	public static void drawGradLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red1, float green1, float blue1, float alpha1, float red2, float green2, float blue2, float alpha2) {
-		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red1, green1, blue1, alpha1).normal(entry.getNormalMatrix(), 1, 1, 1).next();
-		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red2, green2, blue2, alpha2).normal(entry.getNormalMatrix(), 1, 1, 1).next();
+		float k = (maxX - minX);
+		float l = (maxY - minY);
+		float m = (maxZ - minZ);
+		float n = MathHelper.sqrt(k * k + l * l + m * m);
+		k /= n;
+		l /= n;
+		m /= n;
+		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red1, green1, blue1, alpha1).normal(entry.getNormalMatrix(), k, l, m).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red2, green2, blue2, alpha2).normal(entry.getNormalMatrix(), k, l, m).next();
 	}
 	public static void drawLine(MatrixStack.Entry entry, VertexConsumer vertexConsumer, float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float red, float green, float blue, float alpha) {
-		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
-		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), 1, 1, 1).next();
+		float k = (maxX - minX);
+		float l = (maxY - minY);
+		float m = (maxZ - minZ);
+		float n = MathHelper.sqrt(k * k + l * l + m * m);
+		k /= n;
+		l /= n;
+		m /= n;
+		vertexConsumer.vertex(entry.getPositionMatrix(), minX, minY, minZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
+		vertexConsumer.vertex(entry.getPositionMatrix(), maxX, maxY, maxZ).color(red, green, blue, alpha).normal(entry.getNormalMatrix(), k, l, m).next();
 	}
 }
