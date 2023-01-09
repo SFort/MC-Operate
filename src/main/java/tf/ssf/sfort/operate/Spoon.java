@@ -6,9 +6,10 @@ import net.minecraft.block.BlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
@@ -16,7 +17,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.HashMap;
@@ -29,17 +29,18 @@ public class Spoon extends Item {
 	public static Item ITEM;
 
 	public static void register() {
-		ITEM = Registry.register(Registry.ITEM, Main.id("wood_spoon"), new Spoon());
+		ITEM = Registry.register(Registries.ITEM, Main.id("wood_spoon"), new Spoon());
 	}
 
 	public Spoon() {
-		super(new Settings().group(ItemGroup.TOOLS).maxDamage(4));
+		super(new Settings().maxDamage(4));
 	}
 
 	public Spoon(Settings settings) {
 		super(settings);
 	}
 
+	@Override
 	public ActionResult useOnBlock(ItemUsageContext context) {
 		ItemStack stack = context.getStack();
 		if (!stack.isOf(ITEM)) return ActionResult.PASS;
@@ -93,12 +94,20 @@ public class Spoon extends Item {
 		return ActionResult.SUCCESS;
 	}
 
+	@Override
 	public void inventoryTick(ItemStack stack, World world, Entity entity, int slot, boolean selected) {
 		if (!selected && stack.getDamage() != this.getMaxDamage()) stack.setDamage(this.getMaxDamage());
 	}
 
+	@Override
 	public void onCraft(ItemStack stack, World world, PlayerEntity player) {
 		stack.setDamage(this.getMaxDamage());
+	}
+
+	@Override
+	public float getMiningSpeedMultiplier(ItemStack stack, BlockState state) {
+		if (Registries.BLOCK.getId(state.getBlock()).getNamespace().equals("operate")) return 2f;
+		return 1.0f;
 	}
 
 	//Still bad but better

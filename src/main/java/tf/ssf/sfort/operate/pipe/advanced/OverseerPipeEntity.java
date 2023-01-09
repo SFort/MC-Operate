@@ -4,8 +4,9 @@ import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityT
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.pipe.AbstractPipeEntity;
 
@@ -16,7 +17,7 @@ public class OverseerPipeEntity extends AbstractPipeEntity {
 		super(ENTITY_TYPE, blockPos, state);
 	}
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("overseer_pipe"), FabricBlockEntityTypeBuilder.create(OverseerPipeEntity::new, OverseerPipe.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("overseer_pipe"), FabricBlockEntityTypeBuilder.create(OverseerPipeEntity::new, OverseerPipe.BLOCK).build(null));
 	}
 
 	@Override

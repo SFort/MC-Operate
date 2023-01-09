@@ -7,10 +7,11 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 
@@ -30,19 +31,19 @@ public class FilterPipeEntity extends AbstractPipeEntity {
 		super(ENTITY_TYPE, blockPos, state);
 	}
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("filter_pipe"), FabricBlockEntityTypeBuilder.create(FilterPipeEntity::new, FilterPipe.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("filter_pipe"), FabricBlockEntityTypeBuilder.create(FilterPipeEntity::new, FilterPipe.BLOCK).build(null));
 	}
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {
 		NbtCompound tag = super.toInitialChunkDataNbt();
 		NbtCompound nbt = new NbtCompound();
 		for (int i = 0; i< filterOutSides.length; i++) {
-			nbt.putString(Integer.toString(i), Registry.ITEM.getId(filterOutSides[i]).toString());
+			nbt.putString(Integer.toString(i), Registries.ITEM.getId(filterOutSides[i]).toString());
 		}
 		tag.put("filter$out", nbt);
 		nbt = new NbtCompound();
 		for (int i = 0; i< filterInSides.length; i++) {
-			nbt.putString(Integer.toString(i), Registry.ITEM.getId(filterInSides[i]).toString());
+			nbt.putString(Integer.toString(i), Registries.ITEM.getId(filterInSides[i]).toString());
 		}
 		tag.put("filter$in", nbt);
 		return tag;
@@ -53,12 +54,12 @@ public class FilterPipeEntity extends AbstractPipeEntity {
 		super.writeNbt(tag);
 		NbtCompound nbt = new NbtCompound();
 		for (int i = 0; i< filterOutSides.length; i++) {
-			nbt.putString(Integer.toString(i), Registry.ITEM.getId(filterOutSides[i]).toString());
+			nbt.putString(Integer.toString(i), Registries.ITEM.getId(filterOutSides[i]).toString());
 		}
 		tag.put("filter$out", nbt);
 		nbt = new NbtCompound();
 		for (int i = 0; i< filterInSides.length; i++) {
-			nbt.putString(Integer.toString(i), Registry.ITEM.getId(filterInSides[i]).toString());
+			nbt.putString(Integer.toString(i), Registries.ITEM.getId(filterInSides[i]).toString());
 		}
 		tag.put("filter$in", nbt);
 	}
@@ -68,11 +69,11 @@ public class FilterPipeEntity extends AbstractPipeEntity {
 		super.readNbtCommon(tag);
 		NbtCompound nbt = tag.getCompound("filter$out");
 		for (int i = 0; i<filterOutSides.length; i++) {
-			filterOutSides[i] = Registry.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
+			filterOutSides[i] = Registries.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
 		}
 		nbt = tag.getCompound("filter$in");
 		for (int i = 0; i<filterInSides.length; i++) {
-			filterInSides[i] = Registry.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
+			filterInSides[i] = Registries.ITEM.get(Identifier.tryParse(nbt.getString(Integer.toString(i))));
 		}
 	}
 	@Override

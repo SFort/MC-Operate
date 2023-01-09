@@ -7,9 +7,10 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import org.jetbrains.annotations.Nullable;
 import tf.ssf.sfort.operate.Main;
 
@@ -21,7 +22,7 @@ public class EntrancePipeEntity extends AbstractPipeEntity implements SidedInven
 		super(ENTITY_TYPE, blockPos, state);
 	}
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("entrance_pipe"), FabricBlockEntityTypeBuilder.create(EntrancePipeEntity::new, EntrancePipe.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("entrance_pipe"), FabricBlockEntityTypeBuilder.create(EntrancePipeEntity::new, EntrancePipe.BLOCK).build(null));
 	}
 
 	@Override

@@ -14,10 +14,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Matrix4f;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
+import org.joml.AxisAngle4f;
+import org.joml.Matrix4f;
+import org.joml.Quaternionf;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +25,13 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class TransportedStack {
-	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
-	public static final Quaternion X_FLIP_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(180);
+	public static final Quaternionf X_ROTATION = new Quaternionf();
+	//Vec3f.POSITIVE_Y.getDegreesQuaternion(90)
+	public static final Quaternionf X_FLIP_ROTATION = new Quaternionf();
+	static {
+		X_ROTATION.setAngleAxis(Math.toRadians(90), 0, 1, 0);
+		X_FLIP_ROTATION.setAngleAxis(Math.toRadians(180), 0, 1, 0);
+	}
 	public static final ItemStack bundleStack = Items.BUNDLE.getDefaultStack();
 	public static final Map<String, Function<NbtCompound, TransportedStack>> superNbtConstructors = new HashMap<>();
 	static {
@@ -151,7 +156,7 @@ public class TransportedStack {
 		float n = sprite.getMinV();
 		float o = sprite.getMaxV();
 		// POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL
-		RenderSystem.setShaderTexture(0, sprite.getAtlas().getId());
+		RenderSystem.setShaderTexture(0, sprite.getAtlasId());
 		VertexConsumer vertexConsumer = vertex.getBuffer(TexturedRenderLayers.getEntityTranslucentCull());
 		Matrix4f mat = matrix.peek().getPositionMatrix();
 		vertexConsumer.vertex(mat,-0.25f, -0.15f, 0.0f).color(255, 255, 255, 255).texture(m, o).overlay(overlay).light(light).normal(.25f, .25f, .25f).next();

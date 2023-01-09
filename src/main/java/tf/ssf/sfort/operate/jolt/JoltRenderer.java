@@ -11,8 +11,11 @@ import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class JoltRenderer {
     public static void register() {
-        if (Config.fancyInv == null || JoltEntity.ENTITY_TYPE == null) return;
-        BlockEntityRendererRegistry.register(JoltEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> JoltRenderer::render : ctx -> JoltRenderer::look_render);
+        if (JoltEntity.ENTITY_TYPE == null) return;
+        switch (Config.fancyInv) {
+            case ON -> BlockEntityRendererRegistry.register(JoltEntity.ENTITY_TYPE, ctx -> JoltRenderer::render);
+            case EXAMINE -> BlockEntityRendererRegistry.register(JoltEntity.ENTITY_TYPE, ctx -> JoltRenderer::look_render);
+        }
     }
 
     public static void render(JoltEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {

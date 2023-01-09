@@ -8,10 +8,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 
 import java.util.Collections;
@@ -22,7 +23,7 @@ public class ColorTubeEntity extends BlockEntity {
     public TubeConnectTypes[] sides = Collections.nCopies(Direction.values().length, TubeConnectTypes.NONE).toArray(new TubeConnectTypes[0]);
 
     public static void register() {
-        ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("color_tube"), FabricBlockEntityTypeBuilder.create(ColorTubeEntity::new, ColorTube.BLOCK).build(null));
+        ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("color_tube"), FabricBlockEntityTypeBuilder.create(ColorTubeEntity::new, ColorTube.BLOCK).build(null));
     }
 
     public ColorTubeEntity(BlockPos blockPos, BlockState state) {

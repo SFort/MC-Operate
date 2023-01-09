@@ -11,6 +11,8 @@ import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
@@ -19,7 +21,6 @@ import net.minecraft.state.property.Properties;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import tf.ssf.sfort.operate.Config;
@@ -74,7 +75,7 @@ public class OverseerPipe extends AbstractPipe {
 
 	public static void register() {
 		if (Config.advancedPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("overseer_pipe"), new OverseerPipe());
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("overseer_pipe"), new OverseerPipe());
 		OverseerPipeEntity.register();
 		if (Config.advancedPipe) {
 			Spoon.INFUSE.put(new Pair<>(Items.ENDER_EYE, BasicPipe.BLOCK), (world, pos, state, offhand, context) -> {

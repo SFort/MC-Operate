@@ -12,6 +12,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
@@ -20,7 +22,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.util.shape.VoxelShapes;
 import net.minecraft.world.BlockView;
@@ -96,7 +97,7 @@ public class RequestPipe extends AbstractPipe {
 
 	public static void register() {
 		if (Config.advancedPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("request_pipe"), new RequestPipe());
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("request_pipe"), new RequestPipe());
 		RequestPipeEntity.register();
 		if (Config.advancedPipe) {
 			Spoon.INFUSE.put(new Pair<>(Items.RECOVERY_COMPASS, BasicPipe.BLOCK), (world, pos, state, offhand, context) -> {

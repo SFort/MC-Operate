@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.stak.cylinder;
+package tf.ssf.sfort.operate.cylinder;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.AbstractBlock;
@@ -18,6 +18,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
@@ -26,7 +28,6 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -119,19 +120,19 @@ public class Cylinder extends Block implements BlockEntityProvider {
 		return ActionResult.PASS;
 	}
 	public static void register() {
-		if (Config.cylinder != null) {
-			BLOCK = Registry.register(Registry.BLOCK, Main.id("cylinder"), new Cylinder());
-			CylinderEntity.register();
-			if (Config.cylinder)
-				Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.COPPER_BLOCK), (world, pos, cpos, state, cstate) -> {
-					world.removeBlock(pos, false);
-					if (world instanceof ServerWorld) {
-						((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
-						world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
-					}
-					world.setBlockState(cpos, Cylinder.BLOCK.getDefaultState());
-					return true;
-				});
+		if (Config.cylinder == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("cylinder"), new Cylinder());
+		CylinderEntity.register();
+		if (Config.cylinder == Config.EnumOnOffUnregistered.ON) {
+			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.COPPER_BLOCK), (world, pos, cpos, state, cstate) -> {
+				world.removeBlock(pos, false);
+				if (world instanceof ServerWorld) {
+					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
+					world.playSound(null, pos, Sounds.SPOON_BREAK, SoundCategory.BLOCKS, 0.17F, world.getRandom().nextFloat() * 0.1F + 0.9F);
+				}
+				world.setBlockState(cpos, Cylinder.BLOCK.getDefaultState());
+				return true;
+			});
 		}
 	}
 	@Override public Item asItem(){return Items.LAPIS_BLOCK;}

@@ -7,7 +7,7 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Quaternionf;
 import tf.ssf.sfort.operate.Config;
 
 import java.util.function.Consumer;
@@ -15,9 +15,21 @@ import java.util.function.Consumer;
 import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class PunchRenderer {
+    public static final Quaternionf Y_ROT_90 = new Quaternionf();
+    public static final Quaternionf Y_ROT_180 = new Quaternionf();
+    public static final Quaternionf Y_ROT_270 = new Quaternionf();
+    static {
+        Y_ROT_90.setAngleAxis(Math.toRadians(90), 0, 1, 0);
+        Y_ROT_180.setAngleAxis(Math.toRadians(180), 0, 1, 0);
+        Y_ROT_270.setAngleAxis(Math.toRadians(270), 0, 1, 0);
+    }
+
     public static void register() {
-        if (Config.fancyInv == null || PunchEntity.ENTITY_TYPE == null) return;
-        BlockEntityRendererRegistry.register(PunchEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> PunchRenderer::render : ctx -> PunchRenderer::look_render);
+        if (PunchEntity.ENTITY_TYPE == null) return;
+        switch (Config.fancyInv) {
+            case ON -> BlockEntityRendererRegistry.register(PunchEntity.ENTITY_TYPE, ctx -> PunchRenderer::render);
+            case EXAMINE -> BlockEntityRendererRegistry.register(PunchEntity.ENTITY_TYPE, ctx -> PunchRenderer::look_render);
+        }
     }
 
     public static void render(PunchEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
@@ -31,17 +43,17 @@ public class PunchRenderer {
         });
         renderSide(entity, tickDelta, matrix, vertex, light, overlay,
                 m -> {
-                    m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
+                    m.multiply(Y_ROT_90);
                     m.translate(-1, 0, 0);
                 });
         renderSide(entity, tickDelta, matrix, vertex, light, overlay,
                 m -> {
-                    m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(270));
+                    m.multiply(Y_ROT_270);
                     m.translate(0, 0, -1);
                 });
         renderSide(entity, tickDelta, matrix, vertex, light, overlay,
                 m -> {
-                    m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
+                    m.multiply(Y_ROT_180);
                     m.translate(-1, 0, -1);
                 });
     }
@@ -75,15 +87,15 @@ public class PunchRenderer {
                     }
                     final Consumer<MatrixStack> rot = switch (dir) {
                         case 3 -> m -> {
-                            m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(180));
+                            m.multiply(Y_ROT_180);
                             m.translate(-1, 0, -1);
                         };
                         case 4 -> m -> {
-                            m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(90));
+                            m.multiply(Y_ROT_90);
                             m.translate(-1, 0, 0);
                         };
                         case 5 -> m -> {
-                            m.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(270));
+                            m.multiply(Y_ROT_270);
                             m.translate(0, 0, -1);
                         };
                         default -> m -> {

@@ -3,7 +3,6 @@ package tf.ssf.sfort.operate;
 import net.minecraft.block.AbstractBlock;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.FireBlock;
 import net.minecraft.block.HorizontalConnectingBlock;
 import net.minecraft.block.Material;
@@ -13,6 +12,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
@@ -24,7 +25,6 @@ import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldAccess;
@@ -38,19 +38,18 @@ public class Gunpowder extends HorizontalConnectingBlock {
 		this.setDefaultState(this.stateManager.getDefaultState().with(TRIGGERED, false).with(NORTH, false).with(EAST, false).with(SOUTH, false).with(WEST, false).with(WATERLOGGED, false));
 	}
 	public static void register(){
-		if (Config.gunpowder != null) {
-			BLOCK = Registry.register(Registry.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));
-			if (Config.gunpowder) {
-				Spoon.PLACE.put(Items.GUNPOWDER, (world, pos, state, offhand, side) -> {
-					BlockPos gpos = pos.offset(side);
-					if (world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), side) && world.getBlockState(gpos).isAir()) {
-						offhand.decrement(1);
-						world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
-						return ActionResult.SUCCESS;
-					}
-					return null;
-				});
-			}
+		if (Config.gunpowder == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));
+		if (Config.gunpowder == Config.EnumOnOffUnregistered.ON) {
+			Spoon.PLACE.put(Items.GUNPOWDER, (world, pos, state, offhand, side) -> {
+				BlockPos gpos = pos.offset(side);
+				if (world.getBlockState(gpos.down()).isSideSolidFullSquare(world, gpos.down(), side) && world.getBlockState(gpos).isAir()) {
+					offhand.decrement(1);
+					world.setBlockState(gpos, ((Gunpowder) Gunpowder.BLOCK).getPlacementState(world, gpos));
+					return ActionResult.SUCCESS;
+				}
+				return null;
+			});
 		}
 	}
 	@Override
@@ -67,10 +66,10 @@ public class Gunpowder extends HorizontalConnectingBlock {
 			world.setBlockState(pos, state.with(TRIGGERED, true));
 			for (Direction dir : Direction.Type.HORIZONTAL)
 				if (world.getBlockState(pos.up().offset(dir)).getBlock() instanceof Gunpowder)
-					world.createAndScheduleBlockTick(pos.up().offset(dir), this, time);
+					world.scheduleBlockTick(pos.up().offset(dir), this, time);
 
 			world.updateNeighbors(pos.down(), this);
-			world.createAndScheduleBlockTick(pos, this, time);
+			world.scheduleBlockTick(pos, this, time);
 		}
 	}
 	@Override
@@ -87,7 +86,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 					itemStack.decrement(1);
 				}
 			}
-			world.createAndScheduleBlockTick(pos, this, time);
+			world.scheduleBlockTick(pos, this, time);
 
 			return ActionResult.success(world.isClient);
 		}
@@ -96,7 +95,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	@Override
 	public void onProjectileHit(World world, BlockState state, BlockHitResult hit, ProjectileEntity projectile) {
 		if (!world.isClient && projectile.isOnFire())
-			world.createAndScheduleBlockTick(hit.getBlockPos(), this, time);
+			world.scheduleBlockTick(hit.getBlockPos(), this, time);
 
 	}
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
@@ -105,7 +104,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	public BlockState getPlacementState(World world, BlockPos pos) {
 		boolean pow = world.isReceivingRedstonePower(pos);
 		if(pow)
-			world.createAndScheduleBlockTick(pos, this, time);
+			world.scheduleBlockTick(pos, this, time);
 		return this.getDefaultState()
 				.with(TRIGGERED, pow)
 				.with(NORTH, !world.getBlockState(pos.north()).getMaterial().isReplaceable())
@@ -123,14 +122,14 @@ public class Gunpowder extends HorizontalConnectingBlock {
 		} else {
 			if (world.getBlockState(fromPos).getBlock() instanceof FireBlock) {
 				if (!state.get(TRIGGERED)) {
-					world.createAndScheduleBlockTick(pos, this, time);
+					world.scheduleBlockTick(pos, this, time);
 				}
 				return;
 			}
 		}
 		if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(pos.up())) {
 			if (!state.get(TRIGGERED)) {
-				world.createAndScheduleBlockTick(pos, this, time);
+				world.scheduleBlockTick(pos, this, time);
 			}
 		}
 	}

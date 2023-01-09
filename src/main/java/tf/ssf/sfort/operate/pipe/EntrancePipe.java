@@ -12,12 +12,13 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
@@ -52,10 +53,10 @@ public class EntrancePipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("entrance_pipe"), new EntrancePipe());
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("entrance_pipe"), new EntrancePipe());
 		EntrancePipeEntity.register();
-		if (Config.basicPipe) {
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.ON) {
 			Spoon.CRAFT.put(new Pair<>(Blocks.IRON_BLOCK, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {

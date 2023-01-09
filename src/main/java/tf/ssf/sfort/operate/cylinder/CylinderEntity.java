@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.stak.cylinder;
+package tf.ssf.sfort.operate.cylinder;
 
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.minecraft.block.BlockState;
@@ -11,18 +11,21 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootTable;
+import net.minecraft.loot.context.LootContext;
+import net.minecraft.loot.context.LootContextParameters;
+import net.minecraft.loot.context.LootContextType;
+import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.stak.BitStakEntity;
@@ -34,9 +37,9 @@ import java.util.function.Consumer;
 
 public class CylinderEntity extends BlockEntity implements Inventory {
 	public static BlockEntityType<CylinderEntity> ENTITY_TYPE;
-	public static Comparator<Item> missingItemsComparator = Comparator.comparing(Registry.ITEM::getId);
+	public static Comparator<Item> missingItemsComparator = Comparator.comparing(Registries.ITEM::getId);
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("cylinder"), FabricBlockEntityTypeBuilder.create(CylinderEntity::new, Cylinder.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("cylinder"), FabricBlockEntityTypeBuilder.create(CylinderEntity::new, Cylinder.BLOCK).build(null));
 	}
 
 	public NbtCompound cylinderInsns = new NbtCompound();
@@ -125,7 +128,9 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 		if (world != null && !cylinderInsns.isEmpty()) {
 			TreeMap<Item, Integer> originalMap = new TreeMap<>(missingItemsComparator);
 			BitStakEntity.parseInsnsTag(cylinderInsns, itm -> originalMap.merge(itm, 1, Integer::sum));
-			Consumer<ItemStack> splitAndDrop = LootTable.processStacks(stack -> world.spawnEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack)));
+			Consumer<ItemStack> splitAndDrop = LootTable.processStacks(
+					(new LootContext.Builder((ServerWorld)this.world)).random(this.world.random).parameter(LootContextParameters.BLOCK_ENTITY, this).build(LootContextTypes.EMPTY),
+					stack -> world.spawnEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack)));
 			for (Map.Entry<Item, Integer> entry : originalMap.entrySet()) {
 				Item item = entry.getKey();
 				Integer i2 = missingItems.get(item);
@@ -150,7 +155,7 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 		int i = 0;
 		for (Map.Entry<Item, Integer> entry : missingItems.entrySet()) {
 			String key = Integer.toString(i++);
-			t.putString(key, Registry.ITEM.getId(entry.getKey()).toString());
+			t.putString(key, Registries.ITEM.getId(entry.getKey()).toString());
 			t.putInt(key+"i", entry.getValue());
 		}
 		tag.put("missingItems", t);
@@ -163,7 +168,7 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 	public void readNbt(NbtCompound tag) {
 		super.readNbt(tag);
 		if (world != null && world.isClient()) {
-			nextMissingItem = Registry.ITEM.get(new Identifier(tag.getString("nmi")));
+			nextMissingItem = Registries.ITEM.get(new Identifier(tag.getString("nmi")));
 			return;
 		}
 		cylinderInsns = tag.getCompound("cylinderInsns");
@@ -174,7 +179,7 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 			while (true) {
 				String key = Integer.toString(i++);
 				try {
-					Item item = Registry.ITEM.get(new Identifier(mTag.getString(key)));
+					Item item = Registries.ITEM.get(new Identifier(mTag.getString(key)));
 					int count = mTag.getInt(key + "i");
 					if (count > 0 && item != Items.AIR) {
 						missingItems.put(item, count);
@@ -201,7 +206,7 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {
 		NbtCompound tag = new NbtCompound();
-		tag.putString("nmi", Registry.ITEM.getId(nextMissingItem).toString());
+		tag.putString("nmi", Registries.ITEM.getId(nextMissingItem).toString());
 		return tag;
 	}
 

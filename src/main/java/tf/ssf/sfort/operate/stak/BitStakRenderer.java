@@ -8,7 +8,6 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import tf.ssf.sfort.operate.Config;
 
 import static tf.ssf.sfort.operate.MainClient.mc;
@@ -17,7 +16,7 @@ public class BitStakRenderer {
     private int step = 0;
 
     public static void register() {
-        if (Config.fancyInv == null || BitStakEntity.ENTITY_TYPE == null) return;
+        if (Config.fancyInv == Config.EnumOnOffExamine.OFF || BitStakEntity.ENTITY_TYPE == null) return;
         BlockEntityRendererRegistry.register(BitStakEntity.ENTITY_TYPE, ctx -> new BitStakRenderer()::render);
     }
 
@@ -49,7 +48,7 @@ public class BitStakRenderer {
         float rot = face.asRotation();
         if (face.getAxis().equals(Direction.Axis.X))
             rot += 180;
-        matrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rot));
+        //matrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rot));
 
         mc.textRenderer.draw("Text", 8, 8, 0xffff4010, true, matrix.peek().getPositionMatrix(), vertex, false, 0, 15728880);
         if (!entity.instructions.isEmpty()) {

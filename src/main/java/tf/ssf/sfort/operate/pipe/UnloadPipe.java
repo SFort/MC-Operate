@@ -15,6 +15,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.state.StateManager;
@@ -22,7 +24,6 @@ import net.minecraft.state.property.DirectionProperty;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -115,10 +116,10 @@ public class UnloadPipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("unloading_pipe"), new UnloadPipe());
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("unloading_pipe"), new UnloadPipe());
 		UnloadPipeEntity.register();
-		if (Config.basicPipe) {
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.ON) {
 			Spoon.CRAFT.put(new Pair<>(Blocks.HOPPER, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
 				Direction dir = OperateUtil.dirFromHorizontalVec(pos.subtract(cpos));
 				if (dir == null) return false;

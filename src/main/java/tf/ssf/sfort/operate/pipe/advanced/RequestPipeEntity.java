@@ -8,12 +8,13 @@ import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.tick.OrderedTick;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.pipe.AbstractPipeEntity;
@@ -38,7 +39,7 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 		super(ENTITY_TYPE, blockPos, state);
 	}
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("request_pipe"), FabricBlockEntityTypeBuilder.create(RequestPipeEntity::new, RequestPipe.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("request_pipe"), FabricBlockEntityTypeBuilder.create(RequestPipeEntity::new, RequestPipe.BLOCK).build(null));
 	}
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {

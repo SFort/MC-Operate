@@ -8,20 +8,25 @@ import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
+import org.joml.Quaternionf;
 import tf.ssf.sfort.operate.Config;
 
 import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class FilterPipeRenderer<T extends FilterPipeEntity> extends AbstractPipeRenderer<T> {
-	public static final Quaternion Y_ROTATION = Vec3f.POSITIVE_X.getDegreesQuaternion(90);
-	public static final Quaternion X_ROTATION = Vec3f.POSITIVE_Y.getDegreesQuaternion(90);
+	//Vec3f.POSITIVE_X.getDegreesQuaternion(90)
+	public static final Quaternionf Y_ROTATION = new Quaternionf();
+	//Vec3f.POSITIVE_Y.getDegreesQuaternion(90)
+	public static final Quaternionf X_ROTATION = new Quaternionf();
 
+	static {
+		Y_ROTATION.setAngleAxis(Math.toRadians(90), 1, 0, 0);
+		X_ROTATION.setAngleAxis(Math.toRadians(90), 0, 1, 0);
+	}
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
 		BlockEntityRendererRegistry.register(FilterPipeEntity.ENTITY_TYPE, ctx -> new FilterPipeRenderer<>()::render);
 	}
 	@Override

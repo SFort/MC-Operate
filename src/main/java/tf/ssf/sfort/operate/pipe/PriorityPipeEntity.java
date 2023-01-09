@@ -5,9 +5,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.pipe.util.TransportedStack;
 
@@ -27,7 +28,7 @@ public class PriorityPipeEntity extends AbstractPipeEntity {
 		super(ENTITY_TYPE, blockPos, state);
 	}
 	public static void register() {
-		ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("priority_pipe"), FabricBlockEntityTypeBuilder.create(PriorityPipeEntity::new, PriorityPipe.BLOCK).build(null));
+		ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("priority_pipe"), FabricBlockEntityTypeBuilder.create(PriorityPipeEntity::new, PriorityPipe.BLOCK).build(null));
 	}
 	@Override
 	public NbtCompound toInitialChunkDataNbt() {

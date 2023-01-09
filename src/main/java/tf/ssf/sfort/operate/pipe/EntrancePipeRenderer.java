@@ -6,7 +6,7 @@ import tf.ssf.sfort.operate.Config;
 public class EntrancePipeRenderer<T extends EntrancePipeEntity> extends AbstractPipeRenderer<T> {
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
 		BlockEntityRendererRegistry.register(EntrancePipeEntity.ENTITY_TYPE, ctx -> new EntrancePipeRenderer<>()::render);
 	}
 

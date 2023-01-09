@@ -4,8 +4,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.registry.Registry;
 
 import java.util.function.Predicate;
 
@@ -46,17 +46,17 @@ public class RequestPipeRequest implements Predicate<ItemStack> {
 		return ret;
 	}
 	RequestPipeRequest(NbtCompound nbt) {
-		this.item = Registry.ITEM.get(new Identifier(nbt.getString("item")));
+		this.item = Registries.ITEM.get(new Identifier(nbt.getString("item")));
 		this.hash = nbt.getInt("hash");
 		this.count = nbt.getInt("count");
 	}
 	public void writeNbt(NbtCompound tag) {
-		tag.putString("item", Registry.ITEM.getId(this.item).toString());
+		tag.putString("item", Registries.ITEM.getId(this.item).toString());
 		tag.putInt("hash", this.hash);
 		tag.putInt("count", this.count);
 		for (RequestPipeRequest next = this.next; next != null; next=next.next) {
 			NbtCompound nextTag = new NbtCompound();
-			nextTag.putString("item", Registry.ITEM.getId(this.item).toString());
+			nextTag.putString("item", Registries.ITEM.getId(this.item).toString());
 			nextTag.putInt("hash", this.hash);
 			nextTag.putInt("count", this.count);
 			tag.put("next", nextTag);

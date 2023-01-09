@@ -10,13 +10,14 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.particle.BlockStateParticleEffect;
 import net.minecraft.particle.ParticleTypes;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
@@ -32,10 +33,10 @@ public class FilterPipe extends AbstractPipe{
 	}
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
-		BLOCK = Registry.register(Registry.BLOCK, Main.id("filter_pipe"), new FilterPipe());
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("filter_pipe"), new FilterPipe());
 		FilterPipeEntity.register();
-		if (Config.basicPipe) {
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.ON) {
 			Spoon.INFUSE.put(new Pair<>(Items.GOLD_INGOT, BasicPipe.BLOCK), (world, pos, state, offhand, context) -> {
 				offhand.decrement(1);
 				if (world instanceof ServerWorld) {

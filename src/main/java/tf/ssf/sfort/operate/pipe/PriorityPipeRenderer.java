@@ -8,7 +8,7 @@ import tf.ssf.sfort.operate.Config;
 public class PriorityPipeRenderer<T extends PriorityPipeEntity> extends AbstractPipeRenderer<T> {
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
 		BlockEntityRendererRegistry.register(PriorityPipeEntity.ENTITY_TYPE, ctx -> new PriorityPipeRenderer<>()::render);
 	}
 

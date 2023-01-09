@@ -12,9 +12,8 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Quaternion;
-import net.minecraft.util.math.Vec3f;
 import net.minecraft.world.World;
+import org.joml.Quaternionf;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.pipe.AbstractPipeRenderer;
 import tf.ssf.sfort.operate.pipe.advanced.util.RequestPipeUi;
@@ -29,6 +28,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 		if (Config.advancedPipe == null) return;
 		BlockEntityRendererRegistry.register(RequestPipeEntity.ENTITY_TYPE, ctx -> new RequestPipeRenderer<>()::render);
 	}
+	public Quaternionf Y_ROT = new Quaternionf();
 	public void render(T entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		super.render(entity, tickDelta, matrix, vertex, light, overlay);
 		request$render(entity, tickDelta, matrix, vertex, light, overlay);
@@ -39,7 +39,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 
 		if (mc.player != null) {
 			Direction dir = mc.player.getHorizontalFacing();
-			matrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-dir.asRotation()));
+			matrix.multiply(Y_ROT.setAngleAxis(Math.toRadians(-dir.asRotation()), 0, 1, 0));
 			if (dir == Direction.WEST) {
 				matrix.translate(0, 0, -1);
 			} else if (dir == Direction.NORTH) {
@@ -71,7 +71,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 		int y = 0;
 		World world = entity.getWorld();
 		ItemRenderer ir = mc.getItemRenderer();
-		Quaternion spinQuat = Vec3f.POSITIVE_Y.getDegreesQuaternion(world == null ? 0f : (float) Math.sin((world.getTime() + tickDelta)));
+		Quaternionf spinQuat = Y_ROT.setAngleAxis(Math.toRadians(world == null ? 0f : (float) Math.sin((world.getTime() + tickDelta))), 0, 1, 0);
 		for (int i=0, size=entity.rpui.items.size(); i<size; i++) {
 			Map.Entry<RequestPipeUi.Key, RequestPipeUi.Data> entry = entity.rpui.items.get(i);
 			RequestPipeUi.Key key = entry.getKey();

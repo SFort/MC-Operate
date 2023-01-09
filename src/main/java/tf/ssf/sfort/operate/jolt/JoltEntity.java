@@ -15,12 +15,13 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.state.property.Properties;
 import net.minecraft.state.property.Property;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ public class JoltEntity extends BlockEntity implements Inventory {
     public static BlockEntityType<JoltEntity> ENTITY_TYPE;
 
     public static void register() {
-        ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("jolt"), FabricBlockEntityTypeBuilder.create(JoltEntity::new, Jolt.BLOCK).build(null));
+        ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("jolt"), FabricBlockEntityTypeBuilder.create(JoltEntity::new, Jolt.BLOCK).build(null));
     }
 
     public ItemStack inv = ItemStack.EMPTY;

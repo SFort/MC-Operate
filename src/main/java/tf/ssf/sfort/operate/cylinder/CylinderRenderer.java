@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.stak.cylinder;
+package tf.ssf.sfort.operate.cylinder;
 
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.render.VertexConsumerProvider;
@@ -6,22 +6,25 @@ import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.Vec3f;
+import org.joml.Quaternionf;
 import tf.ssf.sfort.operate.Config;
 
 import static tf.ssf.sfort.operate.MainClient.mc;
 
 public class CylinderRenderer {
+	public static Quaternionf Y_ROT = new Quaternionf();
 	public static void register() {
-		if (Config.fancyInv == null || CylinderEntity.ENTITY_TYPE == null) return;
-		BlockEntityRendererRegistry.register(CylinderEntity.ENTITY_TYPE, Config.fancyInv ? ctx -> CylinderRenderer::render : ctx -> CylinderRenderer::look_render);
+		if (CylinderEntity.ENTITY_TYPE == null) return;
+		switch (Config.fancyInv) {
+			case ON -> BlockEntityRendererRegistry.register(CylinderEntity.ENTITY_TYPE, ctx -> CylinderRenderer::render);
+			case EXAMINE -> BlockEntityRendererRegistry.register(CylinderEntity.ENTITY_TYPE, ctx -> CylinderRenderer::look_render);
+		}
 	}
-
 	public static void render(CylinderEntity entity, float tickDelta, MatrixStack matrix, VertexConsumerProvider vertex, int light, int overlay) {
 		matrix.push();
 		matrix.translate(.5, .5, .5);
 		if (mc.player != null) {
-			matrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(-mc.player.getYaw()));
+			matrix.multiply(Y_ROT.setAngleAxis(Math.toRadians(-mc.player.getYaw()), 0, 1, 0));
 		}
 		matrix.push();
 		matrix.translate(0, 0, -.3);

@@ -14,11 +14,12 @@ import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
 import net.minecraft.recipe.RecipeType;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import tf.ssf.sfort.operate.Main;
 
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     public static BlockEntityType<PunchEntity> ENTITY_TYPE;
 
     public static void register() {
-        ENTITY_TYPE = Registry.register(Registry.BLOCK_ENTITY_TYPE, Main.id("punch"), FabricBlockEntityTypeBuilder.create(PunchEntity::new, Punch.BLOCK).build(null));
+        ENTITY_TYPE = Registry.register(Registries.BLOCK_ENTITY_TYPE, Main.id("punch"), FabricBlockEntityTypeBuilder.create(PunchEntity::new, Punch.BLOCK).build(null));
     }
 
     public final PunchInventory inv = new PunchInventory();

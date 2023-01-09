@@ -12,6 +12,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.state.StateManager;
 import net.minecraft.state.property.BooleanProperty;
 import net.minecraft.state.property.Properties;
@@ -20,7 +22,6 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.util.shape.VoxelShape;
 import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
@@ -132,23 +133,23 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 	}
 	public ColorTube(Settings settings) {super(settings);}
 	public static void register() {
-		if (Config.colorTube != null) {
-			BLOCK = Registry.register(Registry.BLOCK, Main.id("color_tube"), new ColorTube());
-			ColorTubeEntity.register();
-			if (Config.colorTube) {
-				Spoon.PLACE.put(Items.REDSTONE, (world, pos, state, offhand, side) -> {
-					BlockPos gpos = pos.offset(side);
-					if (world.getBlockState(gpos).isAir()) {
-						offhand.decrement(1);
-						world.setBlockState(gpos, ColorTube.BLOCK.getDefaultState());
-						BlockEntity e = world.getBlockEntity(gpos);
-						if (e instanceof ColorTubeEntity) ((ColorTubeEntity)e).justPlaced();
-						return ActionResult.SUCCESS;
-					}
-					return null;
-				});
-			}
+		if (Config.colorTube == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		BLOCK = Registry.register(Registries.BLOCK, Main.id("color_tube"), new ColorTube());
+		ColorTubeEntity.register();
+		if (Config.colorTube == Config.EnumOnOffUnregistered.ON) {
+			Spoon.PLACE.put(Items.REDSTONE, (world, pos, state, offhand, side) -> {
+				BlockPos gpos = pos.offset(side);
+				if (world.getBlockState(gpos).isAir()) {
+					offhand.decrement(1);
+					world.setBlockState(gpos, ColorTube.BLOCK.getDefaultState());
+					BlockEntity e = world.getBlockEntity(gpos);
+					if (e instanceof ColorTubeEntity) ((ColorTubeEntity)e).justPlaced();
+					return ActionResult.SUCCESS;
+				}
+				return null;
+			});
 		}
+
 	}
 	@Override public Item asItem(){return Items.REDSTONE;}
 	@Override public BlockEntity createBlockEntity(BlockPos pos, BlockState state) { return new ColorTubeEntity(pos, state); }

@@ -6,7 +6,7 @@ import tf.ssf.sfort.operate.Config;
 public class UnloadPipeRenderer<T extends UnloadPipeEntity> extends AbstractPipeRenderer<T> {
 
 	public static void register() {
-		if (Config.basicPipe == null) return;
+		if (Config.basicPipe == Config.EnumOnOffUnregistered.UNREGISTERED) return;
 		BlockEntityRendererRegistry.register(UnloadPipeEntity.ENTITY_TYPE, ctx -> new UnloadPipeRenderer<>()::render);
 	}
 

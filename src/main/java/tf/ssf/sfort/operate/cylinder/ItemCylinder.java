@@ -1,4 +1,4 @@
-package tf.ssf.sfort.operate.stak.cylinder;
+package tf.ssf.sfort.operate.cylinder;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.BlockState;
@@ -6,19 +6,19 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUsageContext;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtString;
+import net.minecraft.registry.Registries;
+import net.minecraft.registry.Registry;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Config;
 import tf.ssf.sfort.operate.Main;
@@ -34,31 +34,33 @@ public class ItemCylinder extends Item {
 	public static Item ITEM;
 
 	public static void register() {
-		if (Config.cylinder == null) return;
-		ITEM = Registry.register(Registry.ITEM, Main.id("bit_cylinder"), new ItemCylinder());
-		if (Config.cylinder) {
-			Spoon.INFUSE.put(new Pair<>(Items.PAPER, BitStak.BLOCK), (world, pos, state, offhand, context) -> {
-				if (world.isClient || !state.isOf(BitStak.BLOCK) || state.get(BitStak.POWERED)) return null;
-				BlockEntity e = world.getBlockEntity(pos);
-				if (!(e instanceof BitStakEntity) || ((BitStakEntity) e).instructions.isEmpty()) return null;
-				ItemStack bp = ItemCylinder.ITEM.getDefaultStack();
-				NbtCompound tag = bp.getOrCreateNbt();
-				tag.put("insns", ((BitStakEntity) e).getInsnsTag());
-				((BitStakEntity) e).instructions.clear();
-				PlayerEntity player = context.getPlayer();
-				if (offhand.getCount() > 1) {
-					offhand.decrement(1);
-					player.dropItem(offhand, true);
-				}
-				player.setStackInHand(Hand.OFF_HAND, bp);
-				world.playSound(null, pos, Sounds.BIT_CYLINDER, SoundCategory.PLAYERS, 1, .8f + .2f * world.random.nextFloat());
-				return ActionResult.SUCCESS;
-			});
+		if (Config.cylinder == Config.EnumOnOffUnregistered.UNREGISTERED) return;
+		ITEM = Registry.register(Registries.ITEM, Main.id("bit_cylinder"), new ItemCylinder());
+		if (Config.cylinder == Config.EnumOnOffUnregistered.ON) {
+			if (BitStak.BLOCK != null) {
+				Spoon.INFUSE.put(new Pair<>(Items.PAPER, BitStak.BLOCK), (world, pos, state, offhand, context) -> {
+					if (world.isClient || !state.isOf(BitStak.BLOCK) || state.get(BitStak.POWERED)) return null;
+					BlockEntity e = world.getBlockEntity(pos);
+					if (!(e instanceof BitStakEntity) || ((BitStakEntity) e).instructions.isEmpty()) return null;
+					ItemStack bp = ItemCylinder.ITEM.getDefaultStack();
+					NbtCompound tag = bp.getOrCreateNbt();
+					tag.put("insns", ((BitStakEntity) e).getInsnsTag());
+					((BitStakEntity) e).instructions.clear();
+					PlayerEntity player = context.getPlayer();
+					if (offhand.getCount() > 1) {
+						offhand.decrement(1);
+						player.dropItem(offhand, true);
+					}
+					player.setStackInHand(Hand.OFF_HAND, bp);
+					world.playSound(null, pos, Sounds.BIT_CYLINDER, SoundCategory.PLAYERS, 1, .8f + .2f * world.random.nextFloat());
+					return ActionResult.SUCCESS;
+				});
+			}
 		}
 	}
 
 	public ItemCylinder() {
-		super(new Settings().group(ItemGroup.TOOLS).maxCount(8));
+		super(new Settings().maxCount(8));
 	}
 
 	public ItemCylinder(Settings settings) {
@@ -84,9 +86,9 @@ public class ItemCylinder extends Item {
 						while (true) {
 							NbtElement element = tag.get(Integer.toString(i));
 							if (element instanceof NbtString) {
-								Item item = Registry.ITEM.get(new Identifier(element.asString()));
+								Item item = Registries.ITEM.get(new Identifier(element.asString()));
 								if (item != Items.AIR) {
-									if (insns.size() < BitStakEntity.MAX_INSN || BitStak.VALID_INSNS.containsKey(item)) {
+									if (insns.size() < BitStakEntity.MAX_INSN || BitStak.VALID_OPS.containsKey(item)) {
 										insns.add(item);
 									} else {
 										PlayerEntity player = context.getPlayer();

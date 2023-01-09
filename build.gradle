@@ -9,6 +9,11 @@ archivesBaseName = project.archives_base_name
 version = project.mod_version
 group = project.maven_group
 
+repositories {
+	maven {
+		url = "https://maven.ssf.tf/"
+	}
+}
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
@@ -16,6 +21,8 @@ dependencies {
 	modImplementation fabricApi.module('fabric-rendering-v1', project.fabric_version)
 	modImplementation fabricApi.module('fabric-object-builder-api-v1', project.fabric_version)
 	modImplementation fabricApi.module('fabric-registry-sync-v0', project.fabric_version)
+
+	modImplementation include ("tf.ssf.sfort.ini:SF-INI:${project.sfini_version}")
 
 }
 

@@ -4,9 +4,9 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
 
 import java.util.AbstractMap;
@@ -32,7 +32,7 @@ public class RequestPipeUi {
 	int startIndex = 0;
 	int emptySlots = 0;
 	public RequestPipeUi(NbtCompound nbt){
-		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registry.ITEM.getId(i.item)));
+		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registries.ITEM.getId(i.item)));
 		selectedItem = nbt.getInt("selected");
 		filter = nbt.getString("filter");
 		int i = 1;
@@ -46,7 +46,7 @@ public class RequestPipeUi {
 		items = new ArrayList<>(map.entrySet());
 	}
 	public RequestPipeUi(World world, RequestPipeCache cache){
-		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registry.ITEM.getId(i.item)));
+		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registries.ITEM.getId(i.item)));
 		cache.firstEntry(world, node -> {
 			Inventory inv = node.getInv();
 			if (inv == null) return false;
@@ -212,12 +212,12 @@ public class RequestPipeUi {
 			this.nbt = nbt;
 		}
 		public Key(NbtCompound tag) {
-			this.item = Registry.ITEM.get(new Identifier(tag.getString("item")));
+			this.item = Registries.ITEM.get(new Identifier(tag.getString("item")));
 			NbtCompound nbt = tag.getCompound("nbt");
 			this.nbt = nbt.isEmpty() ? null : nbt;
 		}
 		public void writeNbt(NbtCompound tag) {
-			tag.putString("item", Registry.ITEM.getId(item).toString());
+			tag.putString("item", Registries.ITEM.getId(item).toString());
 			if (nbt != null) tag.put("nbt", nbt);
 		}
 		public NbtCompound toNbt(NbtCompound tag) {
