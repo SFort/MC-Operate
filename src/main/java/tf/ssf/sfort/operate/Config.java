@@ -9,7 +9,6 @@ import tf.ssf.sfort.ini.SFIni;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -146,22 +145,6 @@ public class Config {
 		try {
 			List<String> la = Files.readAllLines(confFile.toPath());
 			String[] ls = la.toArray(new String[Math.max(la.size(), 24) | 1]);
-			List<String> defaultDesc = Arrays.asList(
-					"^-Dispensers use gunpowder  [on] on | obsidian | none",
-					"^-Obsidian Dispenser  [on] on | off | unregistered",
-					"^-Block Placer /Jolt  [on] on | off | unregistered",
-					"^-Placeable Gunpowder [on] on | off | unregistered",
-					"^-Spoon can turn on Lamps (blocks with LIT property) [true] true | false",
-					//TODO maybe not send sync packet when disabled only on client
-					"^-Block inventory render  [on] on | off | examine",
-					"^-Crafter /Punch      [on] on | off | unregistered",
-					"^-Computer /BitStak   [on] on | off | unregistered",
-					"^-Color tube          [on] on | off | unregistered",
-					//TODO should probably allow each pipe to be toggled separately
-					"^-Item pipes          [on] on | off | unregistered",
-					"^-Chunk load active item pipes [false] true | false",
-					"^-Item Cylinder       [on] on | off | unregistered"
-			);
 
 			try{
 				oldConf.put("dispenseGunpowder", ls[0].contains("none")? "none" : !ls[0].contains("obsidian") ? "on" : "obsidian");
