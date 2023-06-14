@@ -7,7 +7,6 @@ import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.MapColor;
-import net.minecraft.block.Material;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.piston.PistonBehavior;
@@ -40,10 +39,10 @@ import tf.ssf.sfort.operate.pipe.AbstractPipeEntity;
 public class Cylinder extends Block implements BlockEntityProvider {
 	public static final IntProperty STAGE = IntProperty.of("stage", 0, 2);
 	public static final VoxelShape collisionShape =  Block.createCuboidShape(5.5,0,5.5,10.5,16,10.5);
-	public static final Material MATERIAL = new Material(MapColor.IRON_GRAY, false, false, true, false, false, false, PistonBehavior.NORMAL);
 	public static Block BLOCK;
 	public Cylinder() {
-		super(AbstractBlock.Settings.of(MATERIAL).strength(2.5F).nonOpaque().luminance(state -> state.get(STAGE)));
+		super(AbstractBlock.Settings.create().mapColor(MapColor.IRON_GRAY).pistonBehavior(PistonBehavior.NORMAL)
+				.strength(2.5F).nonOpaque().luminance(state -> state.get(STAGE)));
 		setDefaultState(stateManager.getDefaultState().with(STAGE, 0));
 	}
 	public Cylinder(Settings settings) {super(settings);}

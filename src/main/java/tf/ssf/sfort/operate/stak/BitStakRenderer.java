@@ -3,8 +3,10 @@ package tf.ssf.sfort.operate.stak;
 import com.google.common.collect.ImmutableMap;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.block.BlockState;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3d;
@@ -50,9 +52,9 @@ public class BitStakRenderer {
             rot += 180;
         //matrix.multiply(Vec3f.POSITIVE_Y.getDegreesQuaternion(rot));
 
-        mc.textRenderer.draw("Text", 8, 8, 0xffff4010, true, matrix.peek().getPositionMatrix(), vertex, false, 0, 15728880);
+        mc.textRenderer.draw("Text", 8, 8, 0xffff4010, true, matrix.peek().getPositionMatrix(), vertex, TextRenderer.TextLayerType.NORMAL, 0, 15728880);
         if (!entity.instructions.isEmpty()) {
-            mc.getItemRenderer().renderItem(entity.instructions.get(step).getDefaultStack(), ModelTransformation.Mode.GROUND, 15728880, overlay, matrix, vertex, 1);
+            mc.getItemRenderer().renderItem(entity.instructions.get(step).getDefaultStack(), ModelTransformationMode.GROUND, 15728880, overlay, matrix, vertex, entity.getWorld(), 1);
             if (step < entity.instructions.size()) {
                 step++;
             } else {

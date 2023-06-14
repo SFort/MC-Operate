@@ -4,7 +4,7 @@ package tf.ssf.sfort.operate.pipe;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.BlockEntityTicker;
@@ -21,11 +21,12 @@ import net.minecraft.world.BlockView;
 import net.minecraft.world.World;
 import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoonable;
+import net.minecraft.block.piston.PistonBehavior;
 
 public abstract class AbstractPipe extends Block implements BlockEntityProvider, Spoonable {
 	public static final VoxelShape collisionShape =  Block.createCuboidShape(4,4,4,12,12,12);
 	public AbstractPipe() {
-		super(Settings.of(Material.PISTON).nonOpaque().strength(.35f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).nonOpaque().strength(.35f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 	}
 	@Override
 	public <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {

@@ -4,9 +4,10 @@ package tf.ssf.sfort.operate.tube;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,7 +37,7 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 	public static final VoxelShape collisionShape =  Block.createCuboidShape(4,4,4,12,12,12);
 	public static Block BLOCK;
 	public ColorTube() {
-		super(Settings.of(Material.PISTON).nonOpaque().strength(.5f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).nonOpaque().strength(.5f).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 		setDefaultState(stateManager.getDefaultState().with(ENABLED, false));
 	}
 
@@ -60,7 +61,7 @@ public class ColorTube extends Block implements BlockEntityProvider, Spoonable {
 		if (world.isAir(fromPos)) {
 			BlockEntity entity = world.getBlockEntity(pos);
 			if (entity instanceof ColorTubeEntity) {
-				Direction direction = Direction.fromVector(fromPos.subtract(pos));
+				Direction direction = Direction.fromVector(fromPos.getX()-pos.getX(), fromPos.getY()-pos.getY(), fromPos.getZ()-pos.getZ());
 				if (direction != null) {
 					boolean enabled = ((ColorTubeEntity) entity).setColor(direction, TubeConnectTypes.NONE);
 					if (enabled != state.get(ENABLED)) world.setBlockState(pos, state.with(ENABLED, enabled));

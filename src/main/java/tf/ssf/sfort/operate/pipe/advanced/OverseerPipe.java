@@ -3,9 +3,10 @@ package tf.ssf.sfort.operate.pipe.advanced;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.item.Items;
@@ -44,13 +45,13 @@ public class OverseerPipe extends AbstractPipe {
 	};
 
 	public OverseerPipe() {
-		super(Settings.of(Material.PISTON).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 		setDefaultState(stateManager.getDefaultState().with(FACING, Direction.NORTH));
 	}
 
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		return this.getDefaultState().with(FACING, ctx.getPlayerFacing().getOpposite());
+		return this.getDefaultState().with(FACING, ctx.getPlayerLookDirection().getOpposite());
 	}
 
 	@Override

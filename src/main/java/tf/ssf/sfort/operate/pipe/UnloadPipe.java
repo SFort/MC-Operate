@@ -4,9 +4,10 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.Entity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
@@ -51,7 +52,7 @@ public class UnloadPipe extends AbstractPipe{
 	};
 
 	public UnloadPipe() {
-		super(Settings.of(Material.PISTON).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).strength(1.5F).sounds(Sounds.PIPE_BLOCK_SOUNDS));
 		setDefaultState(stateManager.getDefaultState().with(FACING, Direction.NORTH));
 	}
 	@Override
@@ -92,7 +93,7 @@ public class UnloadPipe extends AbstractPipe{
 	}
 	@Override
 	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		return this.getDefaultState().with(FACING, ctx.getPlayerFacing().getOpposite());
+		return this.getDefaultState().with(FACING, ctx.getPlayerLookDirection().getOpposite());
 	}
 
 	@Override

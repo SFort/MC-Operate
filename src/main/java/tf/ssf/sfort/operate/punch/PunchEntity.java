@@ -9,7 +9,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
@@ -60,7 +60,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
 
     public void popInv() {
         if (this.canCraft()) {
-            ItemStack ret = craftResult.get().craft(inv);
+            ItemStack ret = craftResult.get().craft(inv, world.getRegistryManager());
             inv.clear();
             world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
             dropItem(ret);
@@ -104,7 +104,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
             if (!this.world.isClient()) {
                 ((ServerWorld) world).getChunkManager().markForUpdate(getPos());
             } else {
-                if (craftResult.isPresent()) craftResultDisplay = craftResult.get().getOutput();
+                if (craftResult.isPresent()) craftResultDisplay = craftResult.get().getOutput(world.getRegistryManager());
                 else if (!craftResultDisplay.isEmpty()) craftResultDisplay = ItemStack.EMPTY;
             }
         }
@@ -124,7 +124,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     @Override
     public ItemStack getStack(int slot) {
         if (this.canCraft()) {
-            return craftResult.get().getOutput();
+            return craftResult.get().getOutput(world.getRegistryManager());
         }
         return inv.getStack(PunchInventory.sequence[slot]);
     }
@@ -132,7 +132,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     @Override
     public ItemStack removeStack(int slot) {
         if (this.canCraft()) {
-            ItemStack ret = craftResult.get().craft(inv);
+            ItemStack ret = craftResult.get().craft(inv, world.getRegistryManager());
             inv.clear();
             world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
             return ret;

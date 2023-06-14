@@ -3,9 +3,10 @@ package tf.ssf.sfort.operate.pipe.advanced;
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.ShapeContext;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -45,7 +46,7 @@ public class RequestPipe extends AbstractPipe {
 	};
 
 	public RequestPipe() {
-		super(Settings.of(Material.PISTON).strength(1.5F));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).strength(1.5F));
 	}
 
 	@Override

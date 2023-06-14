@@ -6,7 +6,7 @@ import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.VertexConsumer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -61,7 +61,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 			String text = entity.rpui.filter;
 			if (text.length() > 10) text = text.substring(text.length()-10);
 			matrix.scale(-.03f, -.03f, 1);
-			mc.textRenderer.drawWithShadow(matrix, text, 0, 0, 0xffffffff);
+			mc.textRenderer.draw(text, 0f, 0f, 0xffffffff, true, matrix.peek().getPositionMatrix(), vertex, TextRenderer.TextLayerType.NORMAL, 0, light);
 			matrix.pop();
 		}
 		matrix.pop();
@@ -89,7 +89,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 				stack.setCount(data.reqCount);
 				matrix.multiply(spinQuat);
 			}
-			ir.renderItem(null, stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, stack, ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 	}
@@ -106,13 +106,13 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 		if (data != null) {
 			matrix.push();
 			matrix.scale(-.03f, -.03f, 1);
-			tr.drawWithShadow(matrix, intToShortenedString(data.count), 0, 0, 0xffffffff);
+			tr.draw(intToShortenedString(data.count), 0, 0, 0xffffffff, true, matrix.peek().getPositionMatrix(), vertex, TextRenderer.TextLayerType.NORMAL, 0, light);
 			matrix.translate(0, 9, 0);
-			tr.drawWithShadow(matrix, intToShortenedString(data.reqCount), 0, 0, 0xffff4010);
+			tr.draw(intToShortenedString(data.reqCount), 0, 0, 0xffff4010, true, matrix.peek().getPositionMatrix(), vertex, TextRenderer.TextLayerType.NORMAL, 0, light);
 
 			matrix.pop();
 		}
-		ir.renderItem(null, stack, ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+		ir.renderItem(null, stack, ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 		matrix.pop();
 
 	}

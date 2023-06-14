@@ -10,7 +10,7 @@ import net.minecraft.inventory.SidedInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.world.ServerWorld;
@@ -33,6 +33,7 @@ import tf.ssf.sfort.operate.util.SyncableLinkedList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -383,7 +384,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			return false;
 		if (stak1.getCount() >= Math.min(stak1.getMaxCount(), slotLimit))
 			return false;
-		return ItemStack.areNbtEqual(stak1, stak2);
+		return Objects.equals(stak1, stak2);
 	}
 
 	public void dropInv() {

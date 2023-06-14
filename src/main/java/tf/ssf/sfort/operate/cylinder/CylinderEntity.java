@@ -11,12 +11,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.loot.LootTable;
-import net.minecraft.loot.context.LootContext;
-import net.minecraft.loot.context.LootContextParameters;
-import net.minecraft.loot.context.LootContextType;
-import net.minecraft.loot.context.LootContextTypes;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.registry.Registries;
@@ -125,11 +121,11 @@ public class CylinderEntity extends BlockEntity implements Inventory {
 		}
 	}
 	public void dropInv() {
-		if (world != null && !cylinderInsns.isEmpty()) {
+		if (world instanceof ServerWorld && !cylinderInsns.isEmpty()) {
 			TreeMap<Item, Integer> originalMap = new TreeMap<>(missingItemsComparator);
 			BitStakEntity.parseInsnsTag(cylinderInsns, itm -> originalMap.merge(itm, 1, Integer::sum));
 			Consumer<ItemStack> splitAndDrop = LootTable.processStacks(
-					(new LootContext.Builder((ServerWorld)this.world)).random(this.world.random).parameter(LootContextParameters.BLOCK_ENTITY, this).build(LootContextTypes.EMPTY),
+					(ServerWorld) world,
 					stack -> world.spawnEntity(new ItemEntity(world, pos.getX() + 0.5, pos.getY() + 1, pos.getZ() + 0.5, stack)));
 			for (Map.Entry<Item, Integer> entry : originalMap.entrySet()) {
 				Item item = entry.getKey();

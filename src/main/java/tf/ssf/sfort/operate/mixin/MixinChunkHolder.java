@@ -1,7 +1,8 @@
 package tf.ssf.sfort.operate.mixin;
 
-import net.minecraft.network.Packet;
+import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +15,8 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import tf.ssf.sfort.operate.pipe.util.OperatePipeUpdateS2CPacket;
 
+import java.util.List;
+
 @Mixin(ChunkHolder.class)
 public abstract class MixinChunkHolder {
 
@@ -21,8 +24,8 @@ public abstract class MixinChunkHolder {
 
 	@Shadow @Final ChunkPos pos;
 
-	@Inject(method="sendPacketToPlayersWatching(Lnet/minecraft/network/Packet;Z)V", at=@At("HEAD"), cancellable=true)
-	public void operatePacketUnwrap(Packet<?> packet, boolean onlyOnWatchDistanceEdge, CallbackInfo ci) {
+	@Inject(method="sendPacketToPlayers(Ljava/util/List;Lnet/minecraft/network/packet/Packet;)V", at=@At("HEAD"), cancellable=true)
+	public void operatePacketUnwrap(List<ServerPlayerEntity> players, Packet<?> packet, CallbackInfo ci) {
 		if (packet instanceof OperatePipeUpdateS2CPacket) {
 			ci.cancel();
 			int distance;

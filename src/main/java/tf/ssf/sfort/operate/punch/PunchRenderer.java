@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.Vec3d;
@@ -36,7 +37,7 @@ public class PunchRenderer {
         if (!(entity.craftResultDisplay.isEmpty() || entity.getCachedState().get(Punch.POWERED))) {
             matrix.push();
             matrix.translate(0.5, 1, 0.5);
-            mc.getItemRenderer().renderItem(entity.craftResultDisplay, ModelTransformation.Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, 1);
+            mc.getItemRenderer().renderItem(entity.craftResultDisplay, ModelTransformationMode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, entity.getWorld(), 1);
             matrix.pop();
         }
         renderSide(entity, tickDelta, matrix, vertex, light, overlay, m -> {
@@ -67,7 +68,7 @@ public class PunchRenderer {
             matrix.push();
             matrix.scale(0.6f, 0.6f, 0.6f);
             if (!item.isEmpty())
-                mc.getItemRenderer().renderItem(item, ModelTransformation.Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, 1);
+                mc.getItemRenderer().renderItem(item, ModelTransformationMode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, entity.getWorld(), 1);
             matrix.pop();
             matrix.pop();
         }
@@ -82,7 +83,7 @@ public class PunchRenderer {
                     if (!(entity.craftResultDisplay.isEmpty() || entity.getCachedState().get(Punch.POWERED))) {
                         matrix.push();
                         matrix.translate(0.5, 1, 0.5);
-                        mc.getItemRenderer().renderItem(entity.craftResultDisplay, ModelTransformation.Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, 1);
+                        mc.getItemRenderer().renderItem(entity.craftResultDisplay, ModelTransformationMode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, entity.getWorld(), 1);
                         matrix.pop();
                     }
                     final Consumer<MatrixStack> rot = switch (dir) {

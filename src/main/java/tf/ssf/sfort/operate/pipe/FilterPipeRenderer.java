@@ -3,8 +3,10 @@ package tf.ssf.sfort.operate.pipe;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.VertexConsumerProvider;
+import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
 import net.minecraft.client.render.item.ItemRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -41,40 +43,40 @@ public class FilterPipeRenderer<T extends FilterPipeEntity> extends AbstractPipe
 			matrix.push();
 			matrix.multiply(Y_ROTATION);
 			matrix.translate(1, .6, -.5);
-			ir.renderItem(null, filter[0].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[0].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[1] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(Y_ROTATION);
 			matrix.translate(1, 1.18, -1.5);
-			ir.renderItem(null, filter[1].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[1].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[2] != Items.AIR) {
 			matrix.push();
 			matrix.translate(1.25, .85, .5);
-			ir.renderItem(null, filter[2].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[2].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[3] != Items.AIR) {
 			matrix.push();
 			matrix.translate(.75, .85, 1.5);
-			ir.renderItem(null, filter[3].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[3].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[4] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(X_ROTATION);
 			matrix.translate(-1.25, .85, .5);
-			ir.renderItem(null, filter[4].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[4].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[5] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(X_ROTATION);
 			matrix.translate(-.75, .85, 1.5);
-			ir.renderItem(null, filter[5].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[5].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		//1.18
@@ -83,40 +85,40 @@ public class FilterPipeRenderer<T extends FilterPipeEntity> extends AbstractPipe
 			matrix.push();
 			matrix.multiply(Y_ROTATION);
 			matrix.translate(1, 1.18, -.5);
-			ir.renderItem(null, filter[0].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[0].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[1] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(Y_ROTATION);
 			matrix.translate(1, .6, -1.5);
-			ir.renderItem(null, filter[1].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[1].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[2] != Items.AIR) {
 			matrix.push();
 			matrix.translate(.75, .85, .5);
-			ir.renderItem(null, filter[2].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[2].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[3] != Items.AIR) {
 			matrix.push();
 			matrix.translate(1.25, .85, 1.5);
-			ir.renderItem(null, filter[3].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[3].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[4] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(X_ROTATION);
 			matrix.translate(-.75, .85, .5);
-			ir.renderItem(null, filter[4].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[4].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		if (filter[5] != Items.AIR) {
 			matrix.push();
 			matrix.multiply(X_ROTATION);
 			matrix.translate(-1.25, .85, 1.5);
-			ir.renderItem(null, filter[5].getDefaultStack(), ModelTransformation.Mode.GROUND, false, matrix, vertex, world, light, overlay, -1);
+			ir.renderItem(null, filter[5].getDefaultStack(), ModelTransformationMode.GROUND, false, matrix, vertex, world, light, overlay, -1);
 			matrix.pop();
 		}
 		matrix.pop();

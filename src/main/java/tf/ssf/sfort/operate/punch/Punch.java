@@ -6,8 +6,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemPlacementContext;
@@ -36,7 +37,7 @@ public class Punch extends Block implements BlockEntityProvider{
 	public static final BooleanProperty POWERED = Properties.POWERED;
 	public static Block BLOCK;
 	public Punch() {
-		super(Settings.of(Material.PISTON).strength(1.5F));
+		super(Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.BLOCK).strength(1.5F));
 		setDefaultState(stateManager.getDefaultState().with(POWERED, false));
 	}
 	@Override

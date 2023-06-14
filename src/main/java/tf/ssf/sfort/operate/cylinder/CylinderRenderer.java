@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.render.model.json.ModelTransformation;
+import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.hit.BlockHitResult;
 import org.joml.Quaternionf;
@@ -28,7 +29,7 @@ public class CylinderRenderer {
 		}
 		matrix.push();
 		matrix.translate(0, 0, -.3);
-		mc.getItemRenderer().renderItem(entity.nextMissingItem.getDefaultStack(), ModelTransformation.Mode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, 1);
+		mc.getItemRenderer().renderItem(entity.nextMissingItem.getDefaultStack(), ModelTransformationMode.GROUND, WorldRenderer.getLightmapCoordinates(entity.getWorld(), entity.getPos().up()), overlay, matrix, vertex, entity.getWorld(), 1);
 		matrix.pop();
 		matrix.pop();
 	}

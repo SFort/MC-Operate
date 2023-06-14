@@ -5,7 +5,8 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.FireBlock;
 import net.minecraft.block.HorizontalConnectingBlock;
-import net.minecraft.block.Material;
+import net.minecraft.block.MapColor;
+import net.minecraft.block.piston.PistonBehavior;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.Item;
@@ -39,7 +40,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	}
 	public static void register(){
 		if (Config.gunpowder == Config.EnumOnOffUnregistered.UNREGISTERED) return;
-		BLOCK = Registry.register(Registries.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.of(Material.DECORATION).noCollision().breakInstantly()));
+		BLOCK = Registry.register(Registries.BLOCK, new Identifier("operate", "gunpowder"), new Gunpowder(AbstractBlock.Settings.create().mapColor(MapColor.STONE_GRAY).pistonBehavior(PistonBehavior.DESTROY).noCollision().breakInstantly()));
 		if (Config.gunpowder == Config.EnumOnOffUnregistered.ON) {
 			Spoon.PLACE.put(Items.GUNPOWDER, (world, pos, state, offhand, side) -> {
 				BlockPos gpos = pos.offset(side);
@@ -107,10 +108,10 @@ public class Gunpowder extends HorizontalConnectingBlock {
 			world.scheduleBlockTick(pos, this, time);
 		return this.getDefaultState()
 				.with(TRIGGERED, pow)
-				.with(NORTH, !world.getBlockState(pos.north()).getMaterial().isReplaceable())
-				.with(SOUTH, !world.getBlockState(pos.south()).getMaterial().isReplaceable())
-				.with(WEST, !world.getBlockState(pos.west()).getMaterial().isReplaceable())
-				.with(EAST, !world.getBlockState(pos.east()).getMaterial().isReplaceable());
+				.with(NORTH, !world.getBlockState(pos.north()).isReplaceable())
+				.with(SOUTH, !world.getBlockState(pos.south()).isReplaceable())
+				.with(WEST, !world.getBlockState(pos.west()).isReplaceable())
+				.with(EAST, !world.getBlockState(pos.east()).isReplaceable());
 	}
 
 	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
@@ -135,7 +136,7 @@ public class Gunpowder extends HorizontalConnectingBlock {
 	}
 	public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState newState, WorldAccess world, BlockPos pos, BlockPos posFrom) {
 		return direction.getAxis().isHorizontal()?
-				state.with(FACING_PROPERTIES.get(direction), !newState.getMaterial().isReplaceable())
+				state.with(FACING_PROPERTIES.get(direction), !newState.isReplaceable())
 				:super.getStateForNeighborUpdate(state, direction, newState, world, pos, posFrom);
 	}
 
