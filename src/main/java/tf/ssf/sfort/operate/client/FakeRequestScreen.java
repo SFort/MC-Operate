@@ -7,7 +7,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.packet.Packet;
 import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.packet.c2s.play.CustomPayloadC2SPacket;
+import net.minecraft.network.packet.c2s.common.CustomPayloadC2SPacket;
 import net.minecraft.text.Text;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -16,6 +16,7 @@ import org.lwjgl.glfw.GLFW;
 import tf.ssf.sfort.operate.Main;
 import tf.ssf.sfort.operate.pipe.advanced.RequestPipe;
 import tf.ssf.sfort.operate.pipe.advanced.RequestPipeEntity;
+import tf.ssf.sfort.operate.util.PacketBufCustomPayload;
 
 import java.util.function.Consumer;
 
@@ -41,7 +42,7 @@ public class FakeRequestScreen extends Screen {
 			PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos);
 			buf.writeByte(0);
 			buf.writeChar(chr);
-			sender.accept(new CustomPayloadC2SPacket(Main.reqPacket, buf));
+			sender.accept(new CustomPayloadC2SPacket(new PacketBufCustomPayload(Main.reqPacket, buf)));
 			return true;
 		}
 		close();
@@ -62,7 +63,7 @@ public class FakeRequestScreen extends Screen {
 				if (sender == null) break fail;
 				PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer()).writeBlockPos(pos);
 				buf.writeVarInt(1);
-				sender.accept(new CustomPayloadC2SPacket(Main.reqPacket, buf));
+				sender.accept(new CustomPayloadC2SPacket(new PacketBufCustomPayload(Main.reqPacket, buf)));
 				return true;
 			}
 			close();

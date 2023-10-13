@@ -9,7 +9,6 @@ import net.minecraft.block.MapColor;
 import net.minecraft.block.dispenser.DispenserBehavior;
 import net.minecraft.block.dispenser.ItemDispenserBehavior;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemConvertible;
 import net.minecraft.item.ItemStack;
@@ -86,10 +85,10 @@ public class ObsidianDispenser extends DispenserBlock {
 				});*/
 	}
 	public static ItemStack ignite(BlockPointer pointer, ItemStack stack, int min){
-		BlockPos pos = pointer.getPos().offset(pointer.getBlockState().get(DispenserBlock.FACING));
+		BlockPos pos = pointer.pos().offset(pointer.state().get(DispenserBlock.FACING));
 		if (stack.getCount() < min) min = stack.getCount();
 		stack.decrement(min);
-		ServerWorld w = pointer.getWorld();
+		ServerWorld w = pointer.world();
 		if (w.isAir(pos)){
 			Box box = new Box(pos);
 			w.spawnParticles(ParticleTypes.FLAME, pos.getX()+0.5, pos.getY()+0.6, pos.getZ()+0.5, min*2, 0.3, 0.15, 0.3, 0.01);
@@ -98,7 +97,7 @@ public class ObsidianDispenser extends DispenserBlock {
 					e.damage(w.getDamageSources().explosion((Explosion) null), (float) min);
 				}
 		}else
-			pointer.getWorld().createExplosion(null, pos.getX()+0.5,pos.getY()+0.5,pos.getZ()+0.5, min, World.ExplosionSourceType.TNT);
+			pointer.world().createExplosion(null, pos.getX()+0.5,pos.getY()+0.5,pos.getZ()+0.5, min, World.ExplosionSourceType.TNT);
 		return stack;
 	}
 	@Override

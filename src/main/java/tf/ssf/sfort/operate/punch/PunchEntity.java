@@ -13,6 +13,7 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.recipe.CraftingRecipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.registry.Registries;
 import net.minecraft.registry.Registry;
@@ -100,11 +101,11 @@ public class PunchEntity extends BlockEntity implements Inventory {
     public void markDirty() {
         super.markDirty();
         if (this.world != null) {
-            craftResult = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING, inv, world);
+            craftResult = world.getRecipeManager().getFirstMatch(RecipeType.CRAFTING, inv, world).map(RecipeEntry::value);
             if (!this.world.isClient()) {
                 ((ServerWorld) world).getChunkManager().markForUpdate(getPos());
             } else {
-                if (craftResult.isPresent()) craftResultDisplay = craftResult.get().getOutput(world.getRegistryManager());
+                if (craftResult.isPresent()) craftResultDisplay = craftResult.get().getResult(world.getRegistryManager());
                 else if (!craftResultDisplay.isEmpty()) craftResultDisplay = ItemStack.EMPTY;
             }
         }
@@ -124,7 +125,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     @Override
     public ItemStack getStack(int slot) {
         if (this.canCraft()) {
-            return craftResult.get().getOutput(world.getRegistryManager());
+            return craftResult.get().getResult(world.getRegistryManager());
         }
         return inv.getStack(PunchInventory.sequence[slot]);
     }

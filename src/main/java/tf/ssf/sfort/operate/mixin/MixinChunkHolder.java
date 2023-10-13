@@ -4,7 +4,6 @@ import net.minecraft.network.packet.Packet;
 import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkHolder;
-import net.minecraft.server.world.ThreadedAnvilChunkStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import org.spongepowered.asm.mixin.Final;
@@ -40,7 +39,7 @@ public abstract class MixinChunkHolder {
 						int x2 = spe.getWatchedSection().getSectionX();
 						int z1 = this.pos.z;
 						int z2 = spe.getWatchedSection().getSectionZ();
-						if (ThreadedAnvilChunkStorage.isWithinDistance(x1, z1, x2, z2, distance-1)) {
+						if (operate$isWithinDistance(x1, z1, x2, z2, distance-1)) {
 							return;
 						}
 						BlockPos blockPos = finalPacket.getPos();
@@ -61,6 +60,15 @@ public abstract class MixinChunkHolder {
 			);
 		}
 	}
-
+	private static boolean operate$isWithinDistance(int x1, int z1, int x2, int z2, int distance) {
+		int i = Math.max(0, Math.abs(x1 - x2) - 1);
+		int j = Math.max(0, Math.abs(z1 - z2) - 1);
+		long l = (long)Math.max(0, Math.max(i, j) - 1);
+		long m = (long)Math.min(i, j);
+		long n = m * m + l * l;
+		int k = distance - 1;
+		int o = k * k;
+		return n <= (long)o;
+	}
 
 }

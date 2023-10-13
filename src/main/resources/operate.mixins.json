@@ -7,7 +7,9 @@
   "mixins": [
     "AccessorThreadedAnvilChunkStorage",
     "MixinChunkHolder",
-    "MixinServerPlayNetworkHandler"
+    "MixinServerPlayNetworkHandler",
+    "OldPacketClientMixin",
+    "OldPacketServerMixin"
   ],
   "client": [
     "MixinKeyboard"

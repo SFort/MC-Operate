@@ -3,7 +3,6 @@ package tf.ssf.sfort.operate.jolt;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.render.WorldRenderer;
-import net.minecraft.client.render.model.json.ModelTransformation;
 import net.minecraft.client.render.model.json.ModelTransformationMode;
 import net.minecraft.client.util.math.MatrixStack;
 import tf.ssf.sfort.operate.Config;
