@@ -384,7 +384,7 @@ public abstract class AbstractPipeEntity extends BlockEntity implements ItemPipe
 			return false;
 		if (stak1.getCount() >= Math.min(stak1.getMaxCount(), slotLimit))
 			return false;
-		return Objects.equals(stak1, stak2);
+		return Objects.equals(stak1.getNbt(), stak2.getNbt());
 	}
 
 	public void dropInv() {
