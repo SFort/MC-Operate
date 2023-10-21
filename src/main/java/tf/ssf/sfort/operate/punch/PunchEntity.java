@@ -62,6 +62,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     public void popInv() {
         if (this.canCraft()) {
             ItemStack ret = craftResult.get().craft(inv, world.getRegistryManager());
+            craftResult = Optional.empty();
             inv.clear();
             world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
             dropItem(ret);
@@ -108,6 +109,8 @@ public class PunchEntity extends BlockEntity implements Inventory {
                 if (craftResult.isPresent()) craftResultDisplay = craftResult.get().getResult(world.getRegistryManager());
                 else if (!craftResultDisplay.isEmpty()) craftResultDisplay = ItemStack.EMPTY;
             }
+        } else {
+            craftResult = Optional.empty();
         }
     }
 
@@ -125,7 +128,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
     @Override
     public ItemStack getStack(int slot) {
         if (this.canCraft()) {
-            return craftResult.get().getResult(world.getRegistryManager());
+            return craftResult.get().getResult(world.getRegistryManager()).copy();
         }
         return inv.getStack(PunchInventory.sequence[slot]);
     }
@@ -136,18 +139,28 @@ public class PunchEntity extends BlockEntity implements Inventory {
             ItemStack ret = craftResult.get().craft(inv, world.getRegistryManager());
             inv.clear();
             world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
+            markDirty();
             return ret;
         }
-        return inv.removeStack(PunchInventory.sequence[slot]);
+        ItemStack ret = inv.removeStack(PunchInventory.sequence[slot]);
+        markDirty();
+        return ret;
     }
 
     @Override
     public void setStack(int slot, ItemStack stack) {
         if (this.canCraft()) {
-            craftResult = Optional.empty();
+            inv.clear();
+            world.playSound(null, pos, SoundEvents.BLOCK_PISTON_CONTRACT, SoundCategory.BLOCKS, 0.5F, world.random.nextFloat() * 0.25F + 0.6F);
+            markDirty();
             return;
         }
+        if (stack.getCount() > 1) {
+            stack.setCount(1);
+            world.playSound(null, pos, SoundEvents.BLOCK_CHAIN_BREAK, SoundCategory.BLOCKS, 1.75F, world.random.nextFloat() * 0.25F + 0.6F);
+        }
         inv.setStack(PunchInventory.sequence[slot], stack);
+        markDirty();
     }
 
     @Override
@@ -173,7 +186,7 @@ public class PunchEntity extends BlockEntity implements Inventory {
 
     @Override
     public int size() {
-        return inv.size();
+        return canCraft() ? 1 : inv.size();
     }
 
     @Override
