@@ -136,14 +136,14 @@ public class RequestPipeEntity extends AbstractPipeEntity {
 		markDirtyServer();
 	}
 
-	public void playerInteraction(double x, double y, boolean correctSide) {
+	public void playerInteraction(double x, double y, Direction direction) {
 		markDirtyClient();
 		if (rpui == null) {
 			reloadCache();
-			rpui = new RequestPipeUi(world, cache);
+			rpui = new RequestPipeUi(world, direction, cache);
 			return;
 		}
-		if (correctSide) {
+		if (rpui.direction == direction) {
 			world.playSound(null, pos.getX(), pos.getY(), pos.getZ(), SoundEvents.BLOCK_STONE_BUTTON_CLICK_OFF, SoundCategory.PLAYERS, .5f, .6f+world.random.nextFloat()*.2f);
 			if (rpui.playerClickedSlot(((int)Math.floor(x*5)) + ((int)Math.floor(y*5))*5)) return;
 			RequestPipeRequest req = rpui.generateRequests();

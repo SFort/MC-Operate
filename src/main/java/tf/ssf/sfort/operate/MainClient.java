@@ -52,11 +52,5 @@ public class MainClient implements ClientModInitializer {
 		RequestPipeRenderer.register();
 		//BitStakRenderer.register();
 	}
-	public static int getHorizontalPlayerFacing() {
-		PlayerEntity pe = mc.player;
-		if (pe != null)
-			return pe.getHorizontalFacing().getHorizontal();
-		return -1;
-	}
 
 }

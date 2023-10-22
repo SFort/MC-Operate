@@ -34,6 +34,7 @@ import tf.ssf.sfort.operate.Sounds;
 import tf.ssf.sfort.operate.Spoon;
 import tf.ssf.sfort.operate.pipe.AbstractPipe;
 import tf.ssf.sfort.operate.pipe.BasicPipe;
+import tf.ssf.sfort.operate.pipe.advanced.util.RequestPipeUi;
 
 public class RequestPipe extends AbstractPipe {
 	public static Block BLOCK;
@@ -57,10 +58,17 @@ public class RequestPipe extends AbstractPipe {
 	@Override
 	public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
 		BlockEntity be = world.getBlockEntity(pos);
-		if (be instanceof RequestPipeEntity && ((RequestPipeEntity) be).rpui != null) {
-			int fac = MainClient.getHorizontalPlayerFacing();
-			if (fac != -1)
-				return panelOutlineShapes[fac];
+		if (be instanceof RequestPipeEntity) {
+			RequestPipeUi rpui = ((RequestPipeEntity) be).rpui;
+			if (rpui != null) {
+				Direction dir = rpui.direction;
+				if (dir != null) {
+					int fac = dir.getHorizontal();
+					if (fac != -1) {
+						return panelOutlineShapes[fac];
+					}
+				}
+			}
 		}
 		return super.getOutlineShape(state, world, pos, context);
 	}
@@ -81,16 +89,16 @@ public class RequestPipe extends AbstractPipe {
 				((RequestPipeEntity) be).requestAll();
 			} else if (stack.isEmpty()) {
 				Vec3d hitPos = hit.getPos().subtract(pos.getX(), pos.getY(), pos.getZ());
-				Direction hitDir = hit.getSide();
+				Direction hitDir = hit.getSide().getOpposite();
 				((RequestPipeEntity) be).playerInteraction(
 						switch (hitDir) {
 							case DOWN, UP -> 0;
-							case NORTH -> hitPos.x;
-							case SOUTH -> 1-hitPos.x;
-							case WEST -> 1-hitPos.z;
-							case EAST -> hitPos.z;
+							case SOUTH -> hitPos.x;
+							case NORTH -> 1-hitPos.x;
+							case EAST -> 1-hitPos.z;
+							case WEST -> hitPos.z;
 						}
-						, hitPos.y, player.getHorizontalFacing().getOpposite() == hitDir);
+						, hitPos.y, hitDir);
 			}
 		}
 		return ActionResult.CONSUME;
