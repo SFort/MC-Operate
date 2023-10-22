@@ -38,7 +38,8 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 		matrix.push();
 
 		if (mc.player != null) {
-			Direction dir = mc.player.getHorizontalFacing();
+			Direction dir = entity.rpui.direction;
+			if (dir == null) dir = mc.player.getHorizontalFacing();
 			matrix.multiply(Y_ROT.setAngleAxis(Math.toRadians(-dir.asRotation()), 0, 1, 0));
 			if (dir == Direction.WEST) {
 				matrix.translate(0, 0, -1);
@@ -60,7 +61,7 @@ public class RequestPipeRenderer<T extends RequestPipeEntity> extends AbstractPi
 			matrix.translate(2, 2.5, -.009774);
 			String text = entity.rpui.filter;
 			if (text.length() > 10) text = text.substring(text.length()-10);
-			matrix.scale(-.03f, -.03f, 1);
+			matrix.scale(-.03f, -.03f, -1);
 			mc.textRenderer.draw(text, 0f, 0f, 0xffffffff, true, matrix.peek().getPositionMatrix(), vertex, TextRenderer.TextLayerType.NORMAL, 0, light);
 			matrix.pop();
 		}

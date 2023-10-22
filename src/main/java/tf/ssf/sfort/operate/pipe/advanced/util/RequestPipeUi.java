@@ -6,6 +6,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 
@@ -29,10 +30,12 @@ public class RequestPipeUi {
 	public ArrayList<Map.Entry<Key, Data>> filtered = null;
 	public String filter = "";
 	public int selectedItem = -1;
+	public Direction direction = Direction.NORTH;
 	int startIndex = 0;
 	int emptySlots = 0;
 	public RequestPipeUi(NbtCompound nbt){
 		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registries.ITEM.getId(i.item)));
+		direction = Direction.byId(nbt.getInt("direction"));
 		selectedItem = nbt.getInt("selected");
 		filter = nbt.getString("filter");
 		int i = 1;
@@ -45,7 +48,8 @@ public class RequestPipeUi {
 		}
 		items = new ArrayList<>(map.entrySet());
 	}
-	public RequestPipeUi(World world, RequestPipeCache cache){
+	public RequestPipeUi(World world, Direction direction, RequestPipeCache cache){
+		this.direction = direction;
 		SortedMap<Key, Data> map = new TreeMap<>(Comparator.comparing(i -> Registries.ITEM.getId(i.item)));
 		cache.firstEntry(world, node -> {
 			Inventory inv = node.getInv();
@@ -81,6 +85,7 @@ public class RequestPipeUi {
 		return items;
 	}
 	public void writeNbt(NbtCompound tag) {
+		tag.putInt("direction", direction.getId());
 		tag.putInt("selected", selectedItem - startIndex);
 		tag.putString("filter", filter);
 		if (inspectingItem == null) {
@@ -127,6 +132,7 @@ public class RequestPipeUi {
 		ArrayList<Map.Entry<Key, Data>> items = getActiveList();
 		if (i<20) {
 			i = MathHelper.clamp(i+startIndex, startIndex, Math.min(startIndex+19, items.size()-1));
+			if (i == -1) return true;
 			selectedItem = i;
 			Map.Entry<Key, Data> entry = items.get(i);
 			reqMap.putIfAbsent(entry.getKey(), entry.getValue());
