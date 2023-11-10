@@ -4,6 +4,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.FireBlock;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -58,6 +59,13 @@ public class EntrancePipe extends AbstractPipe{
 		EntrancePipeEntity.register();
 		if (Config.basicPipe == Config.EnumOnOffUnregistered.ON) {
 			Spoon.CRAFT.put(new Pair<>(Blocks.IRON_BLOCK, Blocks.BLACKSTONE), (world, pos, cpos, state, cstate) -> {
+				if (ABSTRACT_CHUTE != null) {
+					BlockPos fromPos = cpos.up();
+					BlockState b = world.getBlockState(fromPos);
+					if (b != null && ABSTRACT_CHUTE.isInstance(b.getBlock())) {
+						world.breakBlock(fromPos, true);
+					}
+				}
 				world.removeBlock(pos, false);
 				if (world instanceof ServerWorld) {
 					((ServerWorld) world).spawnParticles(new BlockStateParticleEffect(ParticleTypes.BLOCK, state), pos.getX() + 0.5, pos.getY() + 0.6, pos.getZ() + 0.5, 12, 0.3, 0.15, 0.3, 0.01);
@@ -70,5 +78,24 @@ public class EntrancePipe extends AbstractPipe{
 
 	}
 	@Override public Item asItem(){return Items.IRON_INGOT;}
-
+	public static final Class<?> ABSTRACT_CHUTE;
+	static {
+		Class<?> c;
+		try {
+			c = Class.forName("com.simibubi.create.content.logistics.chute.AbstractChuteBlock");
+		} catch (ClassNotFoundException e) {
+			c = null;
+		}
+		ABSTRACT_CHUTE = c;
+	}
+	@Override
+	public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
+		if (ABSTRACT_CHUTE == null) return;
+		if(fromPos.getY()>pos.getY()){
+			BlockState b = world.getBlockState(fromPos);
+			if (b != null && ABSTRACT_CHUTE.isInstance(b.getBlock())) {
+				world.breakBlock(fromPos, true);
+			}
+		}
+	}
 }
